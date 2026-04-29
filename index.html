@@ -1558,7 +1558,7 @@
       <div class="auth-card" role="dialog" aria-modal="true" aria-labelledby="authTitle">
         <p class="section-kicker">账号登录</p>
         <h3 id="authTitle">账号密码登录</h3>
-        <p class="auth-copy">登录后可查看和管理自己的报销记录。默认账号：Admin。</p>
+        <p class="auth-copy">登录后可查看和管理自己的报销记录。</p>
         <form class="auth-form" id="authForm">
           <label>
             <span>账号</span>
@@ -1609,10 +1609,8 @@
       const AUTH_CONFIG = {
         DEFAULT_ADMIN_USERNAME: 'Admin',
         DEFAULT_ADMIN_EMAIL: 'reyreyfaust@gmail.com',
-        DEFAULT_ADMIN_PASSWORD: 'X_Rey1',
         SESSION_REMEMBER_DAYS: 30,
         SESSION_STARTED_AT_KEY: 'dav_session_started_at',
-        ADMIN_BOOTSTRAP_KEY: 'dav_admin_seeded_v1',
       };
       const SESSION_REMEMBER_MS = AUTH_CONFIG.SESSION_REMEMBER_DAYS * 24 * 60 * 60 * 1000;
 
@@ -1794,6 +1792,7 @@
       function normalizeLoginEmail(accountText) {
         const account = String(accountText || '').trim();
         if (!account) return '';
+        if (account.includes('@')) return account.toLowerCase();
         if (account.toLowerCase() === AUTH_CONFIG.DEFAULT_ADMIN_USERNAME.toLowerCase()) {
           return AUTH_CONFIG.DEFAULT_ADMIN_EMAIL;
         }
@@ -1806,33 +1805,6 @@
 
       function clearRememberLogin() {
         localStorage.removeItem(AUTH_CONFIG.SESSION_STARTED_AT_KEY);
-      }
-
-      function isAlreadyRegisteredError(message) {
-        const text = String(message || '').toLowerCase();
-        return text.includes('already registered') || text.includes('already been registered');
-      }
-
-      async function ensureAdminAccountSeeded() {
-        if (!supabaseClient) return;
-        if (localStorage.getItem(AUTH_CONFIG.ADMIN_BOOTSTRAP_KEY) === '1') return;
-        const result = await supabaseClient.auth.signUp({
-          email: AUTH_CONFIG.DEFAULT_ADMIN_EMAIL,
-          password: AUTH_CONFIG.DEFAULT_ADMIN_PASSWORD,
-          options: {
-            data: {
-              username: AUTH_CONFIG.DEFAULT_ADMIN_USERNAME,
-            },
-          },
-        });
-        if (result.error && !isAlreadyRegisteredError(result.error.message)) {
-          console.warn('初始化默认管理员失败:', result.error.message);
-          return;
-        }
-        if (result.data && result.data.session) {
-          await supabaseClient.auth.signOut();
-        }
-        localStorage.setItem(AUTH_CONFIG.ADMIN_BOOTSTRAP_KEY, '1');
       }
 
       async function enforceSessionRememberLimit() {
@@ -1938,7 +1910,6 @@
         elements.authError.textContent = '';
         elements.authSubmitButton.disabled = true;
         setStatus('正在登录...');
-        await ensureAdminAccountSeeded();
         const result = await supabaseClient.auth.signInWithPassword({
           email: email,
           password: password,
@@ -1947,9 +1918,9 @@
         if (result.error) {
           const errorMessage = String(result.error.message || '');
           if (errorMessage.toLowerCase().includes('email not confirmed')) {
-            elements.authError.textContent = '管理员账号已创建，但邮箱未确认。请在 Supabase 关闭邮件确认或手动确认该用户。';
+            elements.authError.textContent = '登录失败，请联系管理员。';
           } else {
-            elements.authError.textContent = errorMessage;
+            elements.authError.textContent = '账号或密码不正确。';
           }
           setStatus('登录失败');
           elements.authSubmitButton.disabled = false;
@@ -2008,7 +1979,6 @@
 
       async function initAuthSession() {
         if (!supabaseClient) return;
-        await ensureAdminAccountSeeded();
         const sessionResult = await supabaseClient.auth.getSession();
         if (sessionResult.error) {
           console.error(sessionResult.error);
@@ -2879,6 +2849,9 @@
 
       function applyRecordFilters(query) {
         let nextQuery = query;
+        if (!state.entryAuthorized) {
+          nextQuery = nextQuery.or('status.is.null,status.neq.已报销');
+        }
         if (elements.filterStartDate.value) {
           nextQuery = nextQuery.gte('expense_date', elements.filterStartDate.value);
         }
