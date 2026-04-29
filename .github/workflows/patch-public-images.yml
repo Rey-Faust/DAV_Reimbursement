@@ -1,4 +1,4 @@
-name: Patch receipt image resilience
+name: Patch app hardening
 
 on:
   push:
@@ -18,13 +18,23 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Harden receipt image retention
+      - name: Harden auth, visibility, and image retention
         run: |
           node <<'NODE'
           const fs = require('fs');
           const file = 'index.html';
           let source = fs.readFileSync(file, 'utf8');
           const before = source;
+
+          function replaceAllForms(readable, replacement) {
+            const escaped = readable.replace(/[\u0080-\uFFFF]/g, function (ch) {
+              return '\\u' + ch.charCodeAt(0).toString(16).padStart(4, '0');
+            });
+            const doubleEscaped = escaped.replaceAll('\\', '\\\\');
+            source = source.replaceAll(readable, replacement);
+            source = source.replaceAll(escaped, replacement);
+            source = source.replaceAll(doubleEscaped, replacement);
+          }
 
           const labelReplacements = [
             ['\\\\u56fe\\\\u7247\\\\u6587\\\\u4ef6\\\\u7f3a\\\\u5931\\\\uff0c\\\\u8bf7\\\\u91cd\\\\u65b0\\\\u4e0a\\\\u4f20\\\\u62a5\\\\u9500\\\\u56fe\\\\u7247', '图片文件缺失，请重新上传报销图片'],
@@ -37,6 +47,52 @@ jobs:
           for (const [escaped, readable] of labelReplacements) {
             const singleEscaped = escaped.replaceAll('\\\\', '\\');
             source = source.replaceAll(escaped, readable).replaceAll(singleEscaped, readable);
+          }
+
+          // Keep the login dialog neutral: no default account/password hint is shown to other users.
+          replaceAllForms('登录后可查看和管理自己的报销记录。默认账号：Admin。', '登录后可查看和管理自己的报销记录。');
+          replaceAllForms('默认账号：Admin。', '');
+          replaceAllForms('默认账号：Admin', '');
+          source = source.replace(/(<p[^>]*>\s*登录后可查看和管理自己的报销记录。)\s*默认账号：Admin。?\s*(<\/p>)/g, '$1$2');
+
+          // Do not keep any default password or frontend password fallback in source.
+          source = source.replaceAll('X_Rey1', '');
+          source = source.replaceAll('X_Rey', '');
+          source = source.replace(/\n\s*const\s+[A-Z0-9_]*PASSWORD[A-Z0-9_]*\s*=\s*['"][^'"]*['"]\s*;\s*/g, '\n');
+          source = source.replace(/\n\s*const\s+[A-Z0-9_]*(?:LOGIN|AUTH)[A-Z0-9_]*\s*=\s*\{[^{}]*(?:password|PASSWORD)[^{}]*\}\s*;\s*/gs, '\n');
+          source = source.replace(/\bpassword\s*:\s*[A-Z0-9_]*PASSWORD[A-Z0-9_]*/g, 'password: password');
+          source = source.replace(/\bpassword\s*:\s*[A-Za-z_$][\w$]*\.password\b/g, 'password: password');
+          source = source.replace(/elements\.authPassword\.value\s*=\s*['"][^'"]*['"]\s*;/g, 'elements.authPassword.value = "";');
+          source = source.replace(/elements\.authPassword\.value\s*=\s*[A-Z0-9_]*PASSWORD[A-Z0-9_]*\s*;/g, 'elements.authPassword.value = "";');
+          source = source.replace(/const\s+password\s*=\s*([^;\n]+?)\s*(?:\|\||\?\?)\s*[A-Z0-9_]*PASSWORD[A-Z0-9_]*\s*;/g, 'const password = $1;');
+          source = source.replace(/let\s+password\s*=\s*([^;\n]+?)\s*(?:\|\||\?\?)\s*[A-Z0-9_]*PASSWORD[A-Z0-9_]*\s*;/g, 'let password = $1;');
+          source = source.replace(/if\s*\([^)]*(?:X_Rey1|X_Rey)[^)]*\)\s*\{[\s\S]*?\n\s*\}/g, '');
+
+          // Account aliases are allowed, but the password must always be the typed password passed to Supabase Auth.
+          if (!source.includes('const email = normalizeAuthLoginAccount(account);')) {
+            source = source.replace(/(const\s+account\s*=\s*[^;]+;\s*\n)(\s*)const\s+email\s*=\s*[^;]+;/, '$1$2const email = normalizeAuthLoginAccount(account);');
+          }
+          if (!source.includes('function normalizeAuthLoginAccount(account)')) {
+            const helper = `
+      function normalizeAuthLoginAccount(account) {
+        const value = String(account || '').trim();
+        if (!value) return value;
+        if (value.includes('@')) return value;
+        return value.toLowerCase() === 'admin' ? 'admin@davreimburse.com' : value;
+      }
+`;
+            const authFunctionIndex = source.indexOf('async function signInWithPassword');
+            if (authFunctionIndex !== -1) {
+              source = source.slice(0, authFunctionIndex) + helper + source.slice(authFunctionIndex);
+            }
+          }
+
+          // When not logged in, hide reimbursed rows from both screen and CSV queries.
+          const unpaidVisibilityPatch = "if (!state.entryAuthorized) {\n          query = query.or('status.is.null,status.neq.已报销');\n        }";
+          if (!source.includes("status.is.null,status.neq.已报销")) {
+            source = source.replace(/function\s+applyRecordFilters\s*\(\s*query\s*\)\s*\{/, function (match) {
+              return match + '\n        ' + unpaidVisibilityPatch;
+            });
           }
 
           const storageRetentionReplacements = [
@@ -69,8 +125,12 @@ jobs:
             source = source.replace(item.pattern, item.replacement);
           }
 
+          if (/(X_Rey1|X_Rey)/.test(source)) {
+            throw new Error('Frontend still contains a default password string.');
+          }
+
           if (source === before) {
-            console.log('No receipt image resilience patch was needed.');
+            console.log('No app hardening patch was needed.');
             process.exit(0);
           }
 
@@ -84,5 +144,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Stop automatic receipt image deletion"
+          git commit -m "Use Supabase Auth only and hide reimbursed rows publicly"
           git push
