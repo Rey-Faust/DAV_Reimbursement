@@ -19,6 +19,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Patch admin auth email
         run: |
+          # Keep the public login label as Admin, but point it at the real Supabase Auth email.
           perl -0pi -e 's/admin\@dav\.local/reyreyfaust\@gmail.com/g' index.html
           if git diff --quiet -- index.html; then
             echo "No admin@dav.local mapping found; nothing to patch."
