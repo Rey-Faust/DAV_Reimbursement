@@ -2417,7 +2417,7 @@
 
       async function getSignedImageUrl(path) {
         const cleanPath = String(path || '').trim();
-        if (!cleanPath || !supabaseClient || !state.entryAuthorized) return '';
+        if (!cleanPath || !supabaseClient) return '';
         const cached = state.signedUrlCache.get(cleanPath);
         if (cached && Date.now() < cached.expiresAt) {
           return cached.url;
