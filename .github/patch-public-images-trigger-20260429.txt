@@ -1,0 +1,2 @@
+Trigger patch-public-images workflow on 2026-04-29.
+This file can be kept as a harmless workflow trigger marker.
