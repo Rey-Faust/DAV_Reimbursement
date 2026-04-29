@@ -25,21 +25,30 @@ jobs:
           let source = fs.readFileSync(file, 'utf8');
           const before = source;
 
-          // Read-only users should still be able to view receipt images.
           source = source.replace(
             "if (!cleanPath || !supabaseClient || !state.entryAuthorized) return '';",
             "if (!cleanPath || !supabaseClient) return '';"
           );
 
-          source = source.replace(
-            "if (!supabaseClient || !state.entryAuthorized) return;",
-            "if (!supabaseClient) return;"
-          );
+          const hydrateStart = source.indexOf('async function hydrateSignedImageUrls');
+          if (hydrateStart !== -1) {
+            const hydrateEnd = source.indexOf('\n      async function', hydrateStart + 1);
+            const end = hydrateEnd === -1 ? source.length : hydrateEnd;
+            const hydrateBlock = source.slice(hydrateStart, end).replace(
+              "if (!supabaseClient || !state.entryAuthorized) return;",
+              "if (!supabaseClient) return;"
+            );
+            source = source.slice(0, hydrateStart) + hydrateBlock + source.slice(end);
+          }
 
-          source = source.replace(
-            /(const result = await supabaseClient\.storage\s*\.from\(APP_CONFIG\.STORAGE_BUCKET\)\s*\.createSignedUrl\(cleanPath, SIGNED_URL_TTL_SECONDS\);\s*)if \(result\.error\) \{\s*throw new Error\(result\.error\.message\);\s*\}/,
-            function (_match, prefix) {
-              return prefix + `if (result.error) {
+          const signedMarker = '.createSignedUrl(cleanPath, SIGNED_URL_TTL_SECONDS);';
+          const signedMarkerIndex = source.indexOf(signedMarker);
+          const fallbackMarker = 'getPublicUrl(cleanPath)';
+          if (signedMarkerIndex !== -1 && !source.includes(fallbackMarker)) {
+            const errorStart = source.indexOf('if (result.error)', signedMarkerIndex);
+            const nextSignedUrl = source.indexOf('const signedUrl', errorStart);
+            if (errorStart !== -1 && nextSignedUrl !== -1) {
+              const fallbackBlock = `if (result.error) {
             const publicResult = supabaseClient.storage.from(APP_CONFIG.STORAGE_BUCKET).getPublicUrl(cleanPath);
             const publicUrl = publicResult.data && publicResult.data.publicUrl ? publicResult.data.publicUrl : '';
             if (publicUrl) {
@@ -47,9 +56,12 @@ jobs:
               return publicUrl;
             }
             throw new Error(result.error.message);
-          }`;
+          }
+
+          `;
+              source = source.slice(0, errorStart) + fallbackBlock + source.slice(nextSignedUrl);
             }
-          );
+          }
 
           if (source === before) {
             console.log('No image hydration patch was needed.');
@@ -66,5 +78,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Allow read-only users to view Supabase images"
+          git commit -m "Add public URL fallback for receipts"
           git push
