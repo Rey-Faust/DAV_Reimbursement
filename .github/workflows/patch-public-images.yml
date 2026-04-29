@@ -26,6 +26,10 @@ jobs:
           let source = fs.readFileSync(file, 'utf8');
           const before = source;
 
+          function block(lines) {
+            return lines.join('\n');
+          }
+
           function findFunctionBounds(text, signature) {
             const start = text.indexOf(signature);
             if (start === -1) return null;
@@ -112,26 +116,27 @@ jobs:
 
           function ensureCss() {
             if (source.includes('.thumb-button.is-missing')) return;
-            const css = `
-      .thumb-button.is-missing {
-        cursor: not-allowed;
-        border-color: rgba(216, 109, 34, 0.28);
-        background: rgba(216, 109, 34, 0.12);
-        color: #9e4710;
-      }
-
-      .thumb-missing {
-        width: 100%;
-        height: 100%;
-        display: grid;
-        place-items: center;
-        padding: 4px;
-        font-size: 0.68rem;
-        font-weight: 700;
-        line-height: 1.15;
-        text-align: center;
-      }
-`;
+            const css = block([
+              '      .thumb-button.is-missing {',
+              '        cursor: not-allowed;',
+              '        border-color: rgba(216, 109, 34, 0.28);',
+              '        background: rgba(216, 109, 34, 0.12);',
+              '        color: #9e4710;',
+              '      }',
+              '',
+              '      .thumb-missing {',
+              '        width: 100%;',
+              '        height: 100%;',
+              '        display: grid;',
+              '        place-items: center;',
+              '        padding: 4px;',
+              '        font-size: 0.68rem;',
+              '        font-weight: 700;',
+              '        line-height: 1.15;',
+              '        text-align: center;',
+              '      }',
+              '',
+            ]);
             const thumbImageRule = /(\n      \.thumb-button img \{[\s\S]*?\n      \}\n)/;
             if (thumbImageRule.test(source)) {
               source = source.replace(thumbImageRule, '$1' + css);
@@ -142,65 +147,70 @@ jobs:
 
           ensureCss();
 
-          replaceFunction('async function getSignedImageUrl(path)', `async function getSignedImageUrl(path) {
-        const cleanValue = String(path || '').trim();
-        if (!cleanValue) return '';
-
-        const extractStoragePath = function (value) {
-          if (!/^https?:\/\//i.test(value)) return value;
-          try {
-            const parsed = new URL(value);
-            const publicPrefix = '/storage/v1/object/public/' + APP_CONFIG.STORAGE_BUCKET + '/';
-            const signedPrefix = '/storage/v1/object/sign/' + APP_CONFIG.STORAGE_BUCKET + '/';
-            if (parsed.pathname.includes(publicPrefix)) {
-              return decodeURIComponent(parsed.pathname.split(publicPrefix)[1] || '');
-            }
-            if (parsed.pathname.includes(signedPrefix)) {
-              return decodeURIComponent(parsed.pathname.split(signedPrefix)[1] || '');
-            }
-          } catch (error) {
-            console.error('Receipt image path parse failed:', error);
-          }
-          return value;
-        };
-
-        const cleanPath = extractStoragePath(cleanValue);
-        if (/^(https?:|data:|blob:)/i.test(cleanPath)) return cleanPath;
-        if (!supabaseClient) return '';
-
-        const cached = state.signedUrlCache.get(cleanPath);
-        if (cached && Date.now() < cached.expiresAt) {
-          return cached.url;
-        }
-
-        try {
-          const result = await supabaseClient.storage
-            .from(APP_CONFIG.STORAGE_BUCKET)
-            .createSignedUrl(cleanPath, SIGNED_URL_TTL_SECONDS);
-          if (result.error) {
-            throw new Error(result.error.message);
-          }
-          const signedUrl = result.data && result.data.signedUrl ? result.data.signedUrl : '';
-          if (signedUrl) {
-            state.signedUrlCache.set(cleanPath, { url: signedUrl, expiresAt: Date.now() + SIGNED_URL_CACHE_TTL });
-          }
-          return signedUrl;
-        } catch (error) {
-          const message = error instanceof Error ? error.message : String(error || '');
-          console.error('Receipt image URL failed:', error);
-          if (/object not found|bucket not found|not found|404/i.test(message)) {
-            state.signedUrlCache.set(cleanPath, { url: '', expiresAt: Date.now() + SIGNED_URL_CACHE_TTL });
-            return '';
-          }
-          const publicResult = supabaseClient.storage.from(APP_CONFIG.STORAGE_BUCKET).getPublicUrl(cleanPath);
-          const publicUrl = publicResult.data && publicResult.data.publicUrl ? publicResult.data.publicUrl : '';
-          if (publicUrl) {
-            state.signedUrlCache.set(cleanPath, { url: publicUrl, expiresAt: Date.now() + SIGNED_URL_CACHE_TTL });
-            return publicUrl;
-          }
-          return '';
-        }
-      }`);
+          replaceFunction(
+            'async function getSignedImageUrl(path)',
+            block([
+              '      async function getSignedImageUrl(path) {',
+              "        const cleanValue = String(path || '').trim();",
+              "        if (!cleanValue) return '';",
+              '',
+              '        const extractStoragePath = function (value) {',
+              "          if (!/^https?:\\/\\//i.test(value)) return value;",
+              '          try {',
+              '            const parsed = new URL(value);',
+              "            const publicPrefix = '/storage/v1/object/public/' + APP_CONFIG.STORAGE_BUCKET + '/';",
+              "            const signedPrefix = '/storage/v1/object/sign/' + APP_CONFIG.STORAGE_BUCKET + '/';",
+              '            if (parsed.pathname.includes(publicPrefix)) {',
+              "              return decodeURIComponent(parsed.pathname.split(publicPrefix)[1] || '');",
+              '            }',
+              '            if (parsed.pathname.includes(signedPrefix)) {',
+              "              return decodeURIComponent(parsed.pathname.split(signedPrefix)[1] || '');",
+              '            }',
+              '          } catch (error) {',
+              "            console.error('Receipt image path parse failed:', error);",
+              '          }',
+              '          return value;',
+              '        };',
+              '',
+              '        const cleanPath = extractStoragePath(cleanValue);',
+              '        if (/^(https?:|data:|blob:)/i.test(cleanPath)) return cleanPath;',
+              "        if (!supabaseClient) return '';",
+              '',
+              '        const cached = state.signedUrlCache.get(cleanPath);',
+              '        if (cached && Date.now() < cached.expiresAt) {',
+              '          return cached.url;',
+              '        }',
+              '',
+              '        try {',
+              '          const result = await supabaseClient.storage',
+              '            .from(APP_CONFIG.STORAGE_BUCKET)',
+              '            .createSignedUrl(cleanPath, SIGNED_URL_TTL_SECONDS);',
+              '          if (result.error) {',
+              '            throw new Error(result.error.message);',
+              '          }',
+              "          const signedUrl = result.data && result.data.signedUrl ? result.data.signedUrl : '';",
+              '          if (signedUrl) {',
+              '            state.signedUrlCache.set(cleanPath, { url: signedUrl, expiresAt: Date.now() + SIGNED_URL_CACHE_TTL });',
+              '          }',
+              '          return signedUrl;',
+              '        } catch (error) {',
+              "          const message = error instanceof Error ? error.message : String(error || '');",
+              "          console.error('Receipt image URL failed:', error);",
+              '          if (/object not found|bucket not found|not found|404/i.test(message)) {',
+              "            state.signedUrlCache.set(cleanPath, { url: '', expiresAt: Date.now() + SIGNED_URL_CACHE_TTL });",
+              "            return '';",
+              '          }',
+              '          const publicResult = supabaseClient.storage.from(APP_CONFIG.STORAGE_BUCKET).getPublicUrl(cleanPath);',
+              "          const publicUrl = publicResult.data && publicResult.data.publicUrl ? publicResult.data.publicUrl : '';",
+              '          if (publicUrl) {',
+              '            state.signedUrlCache.set(cleanPath, { url: publicUrl, expiresAt: Date.now() + SIGNED_URL_CACHE_TTL });',
+              '            return publicUrl;',
+              '          }',
+              "          return '';",
+              '        }',
+              '      }',
+            ]),
+          );
 
           const hydrateBounds = findFunctionBounds(source, 'async function hydrateSignedImageUrls(records)');
           if (hydrateBounds) {
@@ -212,70 +222,78 @@ jobs:
             console.log('Function not found: async function hydrateSignedImageUrls(records)');
           }
 
-          const missingImageHelpers = `      let receiptImageFailureHandlerBound = false;
-
-      function markReceiptImageMissing(imageElement) {
-        if (!imageElement || !imageElement.closest) return;
-        const button = imageElement.closest('.thumb-button');
-        if (!button || button.classList.contains('is-missing')) return;
-        button.classList.add('is-missing');
-        button.removeAttribute('data-image-url');
-        button.disabled = true;
-        button.title = '图片文件缺失，请重新上传报销图片';
-        button.setAttribute('aria-label', '图片文件缺失');
-        button.innerHTML = '<span class="thumb-missing">缺图</span>';
-      }
-
-      function bindReceiptImageFailureHandling() {
-        if (receiptImageFailureHandlerBound) return;
-        receiptImageFailureHandlerBound = true;
-        document.addEventListener(
-          'error',
-          function (event) {
-            if (event.target instanceof HTMLImageElement && event.target.closest('.thumb-button')) {
-              markReceiptImageMissing(event.target);
-            }
-          },
-          true,
-        );
-      }`;
-          insertBefore('      function openLightbox(imageUrl)', missingImageHelpers);
+          insertBefore(
+            '      function openLightbox(imageUrl)',
+            block([
+              '      let receiptImageFailureHandlerBound = false;',
+              '',
+              '      function markReceiptImageMissing(imageElement) {',
+              '        if (!imageElement || !imageElement.closest) return;',
+              "        const button = imageElement.closest('.thumb-button');",
+              "        if (!button || button.classList.contains('is-missing')) return;",
+              "        button.classList.add('is-missing');",
+              "        button.removeAttribute('data-image-url');",
+              '        button.disabled = true;',
+              "        button.title = '\\u56fe\\u7247\\u6587\\u4ef6\\u7f3a\\u5931\\uff0c\\u8bf7\\u91cd\\u65b0\\u4e0a\\u4f20\\u62a5\\u9500\\u56fe\\u7247';",
+              "        button.setAttribute('aria-label', '\\u56fe\\u7247\\u6587\\u4ef6\\u7f3a\\u5931');",
+              '        button.innerHTML = \'<span class="thumb-missing">\\u7f3a\\u56fe</span>\';',
+              '      }',
+              '',
+              '      function bindReceiptImageFailureHandling() {',
+              '        if (receiptImageFailureHandlerBound) return;',
+              '        receiptImageFailureHandlerBound = true;',
+              '        document.addEventListener(',
+              "          'error',",
+              '          function (event) {',
+              "            if (event.target instanceof HTMLImageElement && event.target.closest('.thumb-button')) {",
+              '              markReceiptImageMissing(event.target);',
+              '            }',
+              '          },',
+              '          true,',
+              '        );',
+              '      }',
+            ]),
+          );
 
           if (source.includes('function bindEvents() {') && !source.includes('bindReceiptImageFailureHandling();')) {
             source = source.replace('      function bindEvents() {', '      function bindEvents() {\n        bindReceiptImageFailureHandling();');
           }
 
-          const verifyHelper = `      async function verifyStoredReceiptImages(paths) {
-        if (!supabaseClient) return;
-        const cleanPaths = (Array.isArray(paths) ? paths : [paths])
-          .map(function (path) {
-            return String(path || '').trim();
-          })
-          .filter(function (path) {
-            return path && !/^(https?:|data:|blob:)/i.test(path);
-          });
-        if (!cleanPaths.length) return;
-
-        const missingPaths = [];
-        await Promise.all(
-          cleanPaths.map(async function (path) {
-            try {
-              const result = await supabaseClient.storage.from(APP_CONFIG.STORAGE_BUCKET).createSignedUrl(path, 60);
-              if (result.error || !result.data || !result.data.signedUrl) {
-                missingPaths.push(path);
-              }
-            } catch (error) {
-              console.error('Receipt upload verification failed:', error);
-              missingPaths.push(path);
-            }
-          }),
-        );
-
-        if (missingPaths.length) {
-          throw new Error('图片上传校验失败：Supabase Storage 中找不到 ' + missingPaths.length + ' 个文件，请重新上传。');
-        }
-      }`;
-          insertBefore('      async function uploadReceiptImages(files)', verifyHelper);
+          insertBefore(
+            '      async function uploadReceiptImages(files)',
+            block([
+              '      async function verifyStoredReceiptImages(paths) {',
+              '        if (!supabaseClient) return;',
+              '        const cleanPaths = (Array.isArray(paths) ? paths : [paths])',
+              '          .map(function (path) {',
+              "            return String(path || '').trim();",
+              '          })',
+              '          .filter(function (path) {',
+              '            return path && !/^(https?:|data:|blob:)/i.test(path);',
+              '          });',
+              '        if (!cleanPaths.length) return;',
+              '',
+              '        const missingPaths = [];',
+              '        await Promise.all(',
+              '          cleanPaths.map(async function (path) {',
+              '            try {',
+              '              const result = await supabaseClient.storage.from(APP_CONFIG.STORAGE_BUCKET).createSignedUrl(path, 60);',
+              '              if (result.error || !result.data || !result.data.signedUrl) {',
+              '                missingPaths.push(path);',
+              '              }',
+              '            } catch (error) {',
+              "              console.error('Receipt upload verification failed:', error);",
+              '              missingPaths.push(path);',
+              '            }',
+              '          }),',
+              '        );',
+              '',
+              '        if (missingPaths.length) {',
+              "          throw new Error('\\u56fe\\u7247\\u4e0a\\u4f20\\u6821\\u9a8c\\u5931\\u8d25\\uff1aSupabase Storage \\u4e2d\\u627e\\u4e0d\\u5230 ' + missingPaths.length + ' \\u4e2a\\u6587\\u4ef6\\uff0c\\u8bf7\\u91cd\\u65b0\\u4e0a\\u4f20\\u3002');",
+              '        }',
+              '      }',
+            ]),
+          );
 
           const uploadBounds = findFunctionBounds(source, 'async function uploadReceiptImages(files)');
           if (uploadBounds) {
