@@ -1,115 +1,14 @@
 name: Patch app hardening
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  patch-index:
+  already-patched:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Apply app hardening patch
-        run: |
-          cat > /tmp/patch-dav-index.js <<'NODE'
-          const fs = require('fs');
-          const file = process.argv[2] || 'index.html';
-          let source = fs.readFileSync(file, 'utf8');
-          const before = source;
-
-          function replaceExact(search, replacement) {
-            source = source.split(search).join(replacement);
-          }
-
-          replaceExact('登录后可查看和管理自己的报销记录。默认账号：Admin。', '登录后可查看和管理自己的报销记录。');
-          replaceExact('默认账号：Admin。', '');
-          replaceExact('默认账号：Admin', '');
-
-          source = source.replace(/\n\s*DEFAULT_ADMIN_PASSWORD:\s*['"][^'"]*['"],/g, '');
-          source = source.replace(/\n\s*ADMIN_BOOTSTRAP_KEY:\s*['"][^'"]*['"],/g, '');
-
-          const bootstrapStart = source.indexOf('      function isAlreadyRegisteredError(message) {');
-          const bootstrapEnd = source.indexOf('      async function enforceSessionRememberLimit()');
-          if (bootstrapStart !== -1 && bootstrapEnd !== -1 && bootstrapEnd > bootstrapStart) {
-            source = source.slice(0, bootstrapStart) + source.slice(bootstrapEnd);
-          }
-          source = source.replace(/\n\s*await\s+ensureAdminAccountSeeded\(\);/g, '');
-
-          const loginEmailPattern = /function\s+normalizeLoginEmail\(accountText\)\s*\{[\s\S]*?\n\s*\}\n\n\s*function\s+rememberLoginStartedNow/;
-          const loginEmailReplacement = `function normalizeLoginEmail(accountText) {
-                  const account = String(accountText || '').trim();
-                  if (!account) return '';
-                  if (account.includes('@')) return account.toLowerCase();
-                  if (account.toLowerCase() === AUTH_CONFIG.DEFAULT_ADMIN_USERNAME.toLowerCase()) {
-                    return AUTH_CONFIG.DEFAULT_ADMIN_EMAIL;
-                  }
-                  return '';
-                }
-
-                function rememberLoginStartedNow`;
-          if (!source.includes("if (account.includes('@')) return account.toLowerCase();")) {
-            source = source.replace(loginEmailPattern, loginEmailReplacement);
-          }
-
-          source = source.replace(
-            "elements.authError.textContent = '管理员账号已创建，但邮箱未确认。请在 Supabase 关闭邮件确认或手动确认该用户。';",
-            "elements.authError.textContent = '登录失败，请联系管理员。';",
-          );
-          source = source.replace(
-            "elements.authError.textContent = errorMessage;",
-            "elements.authError.textContent = '账号或密码不正确。';",
-          );
-
-          if (!source.includes('status.is.null,status.neq.已报销')) {
-            source = source.replace(
-              "function applyRecordFilters(query) {\n        let nextQuery = query;",
-              "function applyRecordFilters(query) {\n        let nextQuery = query;\n        if (!state.entryAuthorized) {\n          nextQuery = nextQuery.or('status.is.null,status.neq.已报销');\n        }",
-            );
-          }
-
-          if (/DEFAULT_ADMIN_PASSWORD|ensureAdminAccountSeeded|ADMIN_BOOTSTRAP_KEY|auth\.signUp/.test(source)) {
-            throw new Error('Frontend still contains password bootstrap code.');
-          }
-          if (source.includes(['X', '_Rey'].join(''))) {
-            throw new Error('Frontend still contains the old default password.');
-          }
-          if (!source.includes('status.is.null,status.neq.已报销')) {
-            throw new Error('Unauthenticated reimbursed-row filter was not installed.');
-          }
-
-          if (source === before) {
-            console.log('No index.html diff.');
-            process.exit(0);
-          }
-
-          fs.writeFileSync(file, source);
-          console.log('Patched index.html.');
-          NODE
-
-          node /tmp/patch-dav-index.js index.html
-          python3 - <<'PY'
-          from pathlib import Path
-          text = Path('index.html').read_text()
-          start = text.index('<script>') + len('<script>')
-          end = text.rindex('</script>')
-          Path('/tmp/dav-index-script.js').write_text(text[start:end])
-          PY
-          node --check /tmp/dav-index-script.js
-
-          if git diff --quiet -- index.html; then
-            echo "No index.html diff."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          git commit -m "Use Supabase Auth only and hide reimbursed rows publicly"
-          git push
+      - name: Already patched directly
+        run: echo "Auth and public visibility hardening now live in index.html."
