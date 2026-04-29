@@ -3239,7 +3239,7 @@
                   .select('id')
                   .eq('id', state.editingRecordId);
                 if (!updateResult.error && fallbackUpdate.removed.multiImage && nextImagePaths.length > 1) {
-                  await removeStoredImages(nextImagePaths.slice(1));
+                  // Keep extra uploaded images in Storage even if an old schema fallback saves only the first path.
                 }
               }
             }
@@ -3252,7 +3252,9 @@
             }
 
             if (nextImagePaths.length && currentRecord) {
-              await removeStoredImages(getRecordImagePaths(currentRecord));
+              // Keep previous receipt files in Storage when replacing images.
+
+              // This prevents historical database paths from turning into broken links.
             }
           } else {
             const createPayload = Object.assign({}, basePayload, {
@@ -3274,7 +3276,7 @@
                 fallbackCurrencyMeta = fallbackCurrencyMeta || fallbackInsert.removed.currencyMeta;
                 insertResult = await supabaseClient.from('reimbursements').insert(fallbackInsert.payload);
                 if (!insertResult.error && fallbackInsert.removed.multiImage && nextImagePaths.length > 1) {
-                  await removeStoredImages(nextImagePaths.slice(1));
+                  // Keep extra uploaded images in Storage even if an old schema fallback saves only the first path.
                 }
               }
             }
@@ -3304,13 +3306,7 @@
           setStatus(error instanceof Error ? error.message : '保存失败');
         } finally {
           if (!dbWriteSucceeded && uploadedImages.length) {
-            await removeStoredImages(
-              uploadedImages
-                .map(function (item) {
-                  return item.path;
-                })
-                .filter(Boolean),
-            );
+            // Keep uploaded receipt files in Storage for recovery; clean orphaned files manually if needed.
           }
           setSubmitState(false);
         }
@@ -3351,7 +3347,10 @@
           return;
         }
 
-        await removeStoredImages(getRecordImagePaths(record));
+        // Receipt files are intentionally retained in Storage when rows are deleted.
+
+
+        // If cleanup is needed later, do it as a separate audited admin action.
 
         if (String(state.editingRecordId) === String(record.id)) {
           resetFormToCreateMode();
