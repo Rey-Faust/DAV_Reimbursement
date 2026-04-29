@@ -1,4 +1,4 @@
-name: Patch public image reads
+name: Patch receipt image resilience
 
 on:
   push:
@@ -11,13 +11,14 @@ permissions:
 
 jobs:
   patch-index:
+    if: ${{ github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Patch receipt image hydration
+      - name: Patch receipt image loading and persistence
         run: |
           node <<'NODE'
           const fs = require('fs');
@@ -98,6 +99,49 @@ jobs:
             return true;
           }
 
+          function insertBefore(marker, content) {
+            if (source.includes(content.trim().split('\n')[0].trim())) return false;
+            const index = source.indexOf(marker);
+            if (index === -1) {
+              console.log('Marker not found:', marker);
+              return false;
+            }
+            source = source.slice(0, index) + content + '\n\n' + source.slice(index);
+            return true;
+          }
+
+          function ensureCss() {
+            if (source.includes('.thumb-button.is-missing')) return;
+            const css = `
+      .thumb-button.is-missing {
+        cursor: not-allowed;
+        border-color: rgba(216, 109, 34, 0.28);
+        background: rgba(216, 109, 34, 0.12);
+        color: #9e4710;
+      }
+
+      .thumb-missing {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        place-items: center;
+        padding: 4px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        line-height: 1.15;
+        text-align: center;
+      }
+`;
+            const thumbImageRule = /(\n      \.thumb-button img \{[\s\S]*?\n      \}\n)/;
+            if (thumbImageRule.test(source)) {
+              source = source.replace(thumbImageRule, '$1' + css);
+            } else {
+              source = source.replace('</style>', css + '    </style>');
+            }
+          }
+
+          ensureCss();
+
           replaceFunction('async function getSignedImageUrl(path)', `async function getSignedImageUrl(path) {
         const cleanValue = String(path || '').trim();
         if (!cleanValue) return '';
@@ -142,7 +186,12 @@ jobs:
           }
           return signedUrl;
         } catch (error) {
+          const message = error instanceof Error ? error.message : String(error || '');
           console.error('Receipt image URL failed:', error);
+          if (/object not found|bucket not found|not found|404/i.test(message)) {
+            state.signedUrlCache.set(cleanPath, { url: '', expiresAt: Date.now() + SIGNED_URL_CACHE_TTL });
+            return '';
+          }
           const publicResult = supabaseClient.storage.from(APP_CONFIG.STORAGE_BUCKET).getPublicUrl(cleanPath);
           const publicUrl = publicResult.data && publicResult.data.publicUrl ? publicResult.data.publicUrl : '';
           if (publicUrl) {
@@ -163,6 +212,89 @@ jobs:
             console.log('Function not found: async function hydrateSignedImageUrls(records)');
           }
 
+          const missingImageHelpers = `      let receiptImageFailureHandlerBound = false;
+
+      function markReceiptImageMissing(imageElement) {
+        if (!imageElement || !imageElement.closest) return;
+        const button = imageElement.closest('.thumb-button');
+        if (!button || button.classList.contains('is-missing')) return;
+        button.classList.add('is-missing');
+        button.removeAttribute('data-image-url');
+        button.disabled = true;
+        button.title = '图片文件缺失，请重新上传报销图片';
+        button.setAttribute('aria-label', '图片文件缺失');
+        button.innerHTML = '<span class="thumb-missing">缺图</span>';
+      }
+
+      function bindReceiptImageFailureHandling() {
+        if (receiptImageFailureHandlerBound) return;
+        receiptImageFailureHandlerBound = true;
+        document.addEventListener(
+          'error',
+          function (event) {
+            if (event.target instanceof HTMLImageElement && event.target.closest('.thumb-button')) {
+              markReceiptImageMissing(event.target);
+            }
+          },
+          true,
+        );
+      }`;
+          insertBefore('      function openLightbox(imageUrl)', missingImageHelpers);
+
+          if (source.includes('function bindEvents() {') && !source.includes('bindReceiptImageFailureHandling();')) {
+            source = source.replace('      function bindEvents() {', '      function bindEvents() {\n        bindReceiptImageFailureHandling();');
+          }
+
+          const verifyHelper = `      async function verifyStoredReceiptImages(paths) {
+        if (!supabaseClient) return;
+        const cleanPaths = (Array.isArray(paths) ? paths : [paths])
+          .map(function (path) {
+            return String(path || '').trim();
+          })
+          .filter(function (path) {
+            return path && !/^(https?:|data:|blob:)/i.test(path);
+          });
+        if (!cleanPaths.length) return;
+
+        const missingPaths = [];
+        await Promise.all(
+          cleanPaths.map(async function (path) {
+            try {
+              const result = await supabaseClient.storage.from(APP_CONFIG.STORAGE_BUCKET).createSignedUrl(path, 60);
+              if (result.error || !result.data || !result.data.signedUrl) {
+                missingPaths.push(path);
+              }
+            } catch (error) {
+              console.error('Receipt upload verification failed:', error);
+              missingPaths.push(path);
+            }
+          }),
+        );
+
+        if (missingPaths.length) {
+          throw new Error('图片上传校验失败：Supabase Storage 中找不到 ' + missingPaths.length + ' 个文件，请重新上传。');
+        }
+      }`;
+          insertBefore('      async function uploadReceiptImages(files)', verifyHelper);
+
+          const uploadBounds = findFunctionBounds(source, 'async function uploadReceiptImages(files)');
+          if (uploadBounds) {
+            let uploadBlock = source.slice(uploadBounds.start, uploadBounds.end);
+            if (!uploadBlock.includes('verifyStoredReceiptImages(')) {
+              const pathVariable = ['imagePaths', 'uploadedPaths', 'paths'].find(function (name) {
+                return new RegExp('\\b' + name + '\\b').test(uploadBlock);
+              });
+              if (pathVariable) {
+                uploadBlock = uploadBlock.replace(/(\n\s*return\s+\{)/, '\n          await verifyStoredReceiptImages(' + pathVariable + ');$1');
+                source = source.slice(0, uploadBounds.start) + uploadBlock + source.slice(uploadBounds.end);
+              } else {
+                console.log('Could not find upload path variable for verification.');
+              }
+            }
+          } else {
+            console.log('Function not found: async function uploadReceiptImages(files)');
+          }
+
           if (source === before) {
             console.log('No index.html changes were needed.');
             process.exit(0);
@@ -178,5 +310,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Harden read-only receipt image loading"
+          git commit -m "Harden receipt image loading and uploads"
           git push
