@@ -1,14 +1,76 @@
-name: Patch app hardening
+name: Patch public receipt images
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  already-patched:
+  patch-index:
     runs-on: ubuntu-latest
     steps:
-      - name: Already patched directly
-        run: echo "Auth and public visibility hardening now live in index.html."
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Allow unauthenticated receipt image viewing
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const file = 'index.html';
+          let source = fs.readFileSync(file, 'utf8');
+          const before = source;
+
+          source = source.replace('            async function getSignedImageUrl(path) {', '      async function getSignedImageUrl(path) {');
+
+          if (!source.includes('function getPublicImageUrl(path)')) {
+            source = source.replace(
+              "      function getRecordImageUrls(record) {\n        const signedUrls = normalizeImageArray(record && record.__signed_image_urls);\n        if (signedUrls.length) return signedUrls;\n        const urls = normalizeImageArray(record && record.image_urls);\n        if (urls.length) return urls;\n        return normalizeImageArray(record && record.image_url);\n      }\n\n      async function getSignedImageUrl(path) {",
+              "      function getRecordImageUrls(record) {\n        const signedUrls = normalizeImageArray(record && record.__signed_image_urls);\n        if (signedUrls.length) return signedUrls;\n        const urls = normalizeImageArray(record && record.image_urls);\n        if (urls.length) return urls;\n        return normalizeImageArray(record && record.image_url);\n      }\n\n      function getPublicImageUrl(path) {\n        if (!supabaseClient) return '';\n        const publicResult = supabaseClient.storage.from(APP_CONFIG.STORAGE_BUCKET).getPublicUrl(path);\n        return publicResult.data && publicResult.data.publicUrl ? publicResult.data.publicUrl : '';\n      }\n\n      async function getSignedImageUrl(path) {",
+            );
+          }
+
+          if (!source.includes('if (!state.entryAuthorized) {\n          const publicUrl = getPublicImageUrl(cleanPath);')) {
+            source = source.replace(
+              "        const cached = state.signedUrlCache.get(cleanPath);\n        if (cached && Date.now() < cached.expiresAt) {\n          return cached.url;\n        }\n\n        try {",
+              "        const cached = state.signedUrlCache.get(cleanPath);\n        if (cached && Date.now() < cached.expiresAt) {\n          return cached.url;\n        }\n\n        if (!state.entryAuthorized) {\n          const publicUrl = getPublicImageUrl(cleanPath);\n          if (publicUrl) {\n            state.signedUrlCache.set(cleanPath, { url: publicUrl, expiresAt: Date.now() + SIGNED_URL_CACHE_TTL });\n          }\n          return publicUrl;\n        }\n\n        try {",
+            );
+          }
+
+          source = source.replace(
+            "          const publicResult = supabaseClient.storage.from(APP_CONFIG.STORAGE_BUCKET).getPublicUrl(cleanPath);\n          const publicUrl = publicResult.data && publicResult.data.publicUrl ? publicResult.data.publicUrl : '';",
+            "          const publicUrl = getPublicImageUrl(cleanPath);",
+          );
+
+          if (!source.includes('function getPublicImageUrl(path)')) {
+            throw new Error('Public image URL helper was not installed.');
+          }
+          if (!source.includes("if (!state.entryAuthorized) {\n          const publicUrl = getPublicImageUrl(cleanPath);")) {
+            throw new Error('Unauthenticated public image branch was not installed.');
+          }
+          if (source === before) {
+            console.log('No public image patch needed.');
+            process.exit(0);
+          }
+
+          fs.writeFileSync(file, source);
+          NODE
+
+          python3 - <<'PY'
+          from pathlib import Path
+          text = Path('index.html').read_text()
+          start = text.index('<script>') + len('<script>')
+          end = text.rindex('</script>')
+          Path('/tmp/dav-index-script.js').write_text(text[start:end])
+          PY
+          node --check /tmp/dav-index-script.js
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Allow public receipt image viewing"
+          git push
