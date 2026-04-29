@@ -3604,9 +3604,9 @@
         button.classList.add('is-missing');
         button.removeAttribute('data-image-url');
         button.disabled = true;
-        button.title = '\u56fe\u7247\u6587\u4ef6\u7f3a\u5931\uff0c\u8bf7\u91cd\u65b0\u4e0a\u4f20\u62a5\u9500\u56fe\u7247';
-        button.setAttribute('aria-label', '\u56fe\u7247\u6587\u4ef6\u7f3a\u5931');
-        button.innerHTML = '<span class="thumb-missing">\u7f3a\u56fe</span>';
+        button.title = '图片文件缺失，请重新上传报销图片';
+        button.setAttribute('aria-label', '图片文件缺失');
+        button.innerHTML = '<span class="thumb-missing">缺图</span>';
       }
 
       function bindReceiptImageFailureHandling() {
