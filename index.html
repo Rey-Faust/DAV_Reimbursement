@@ -1562,7 +1562,7 @@
         <form class="auth-form" id="authForm">
           <label>
             <span>账号</span>
-            <input type="text" id="authEmail" placeholder="Admin" autocomplete="username" required />
+            <input type="text" id="authEmail" placeholder="请输入账号或邮箱" autocomplete="username" required />
           </label>
           <label>
             <span>密码</span>
@@ -1862,7 +1862,7 @@
 
       function openAuthModal() {
         elements.authError.textContent = '';
-        elements.authEmail.value = AUTH_CONFIG.DEFAULT_ADMIN_USERNAME;
+        elements.authEmail.value = '';
         elements.authPassword.value = '';
         elements.authSubmitButton.disabled = false;
         elements.authModal.classList.remove('hidden');
@@ -1902,7 +1902,7 @@
         }
         const email = normalizeLoginEmail(account);
         if (!email) {
-          elements.authError.textContent = '仅支持账号 Admin。';
+          elements.authError.textContent = '账号或密码不正确。';
           elements.authEmail.focus();
           return;
         }
