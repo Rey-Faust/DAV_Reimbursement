@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Patch image URL hydration
+      - name: Patch receipt image hydration
         run: |
           node <<'NODE'
           const fs = require('fs');
@@ -25,46 +25,123 @@ jobs:
           let source = fs.readFileSync(file, 'utf8');
           const before = source;
 
-          source = source.replace(
-            "if (!cleanPath || !supabaseClient || !state.entryAuthorized) return '';",
-            "if (!cleanPath || !supabaseClient) return '';"
-          );
+          function findFunctionBounds(text, signature) {
+            const start = text.indexOf(signature);
+            if (start === -1) return null;
+            const braceStart = text.indexOf('{', start);
+            if (braceStart === -1) return null;
 
-          const hydrateStart = source.indexOf('async function hydrateSignedImageUrls');
-          if (hydrateStart !== -1) {
-            const hydrateEnd = source.indexOf('\n      async function', hydrateStart + 1);
-            const end = hydrateEnd === -1 ? source.length : hydrateEnd;
-            const hydrateBlock = source.slice(hydrateStart, end).replace(
-              "if (!supabaseClient || !state.entryAuthorized) return;",
-              "if (!supabaseClient) return;"
-            );
-            source = source.slice(0, hydrateStart) + hydrateBlock + source.slice(end);
+            let depth = 0;
+            let quote = null;
+            let escaped = false;
+            let lineComment = false;
+            let blockComment = false;
+
+            for (let i = braceStart; i < text.length; i += 1) {
+              const char = text[i];
+              const next = text[i + 1];
+
+              if (lineComment) {
+                if (char === '\n') lineComment = false;
+                continue;
+              }
+              if (blockComment) {
+                if (char === '*' && next === '/') {
+                  blockComment = false;
+                  i += 1;
+                }
+                continue;
+              }
+              if (quote) {
+                if (escaped) {
+                  escaped = false;
+                  continue;
+                }
+                if (char === '\\') {
+                  escaped = true;
+                  continue;
+                }
+                if (char === quote) quote = null;
+                continue;
+              }
+
+              if (char === '/' && next === '/') {
+                lineComment = true;
+                i += 1;
+                continue;
+              }
+              if (char === '/' && next === '*') {
+                blockComment = true;
+                i += 1;
+                continue;
+              }
+              if (char === "'" || char === '"' || char === '`') {
+                quote = char;
+                continue;
+              }
+              if (char === '{') depth += 1;
+              if (char === '}') {
+                depth -= 1;
+                if (depth === 0) return { start, end: i + 1 };
+              }
+            }
+            return null;
           }
 
-          const signedMarker = '.createSignedUrl(cleanPath, SIGNED_URL_TTL_SECONDS);';
-          const signedMarkerIndex = source.indexOf(signedMarker);
-          const fallbackMarker = 'getPublicUrl(cleanPath)';
-          if (signedMarkerIndex !== -1 && !source.includes(fallbackMarker)) {
-            const errorStart = source.indexOf('if (result.error)', signedMarkerIndex);
-            const nextSignedUrl = source.indexOf('const signedUrl', errorStart);
-            if (errorStart !== -1 && nextSignedUrl !== -1) {
-              const fallbackBlock = `if (result.error) {
-            const publicResult = supabaseClient.storage.from(APP_CONFIG.STORAGE_BUCKET).getPublicUrl(cleanPath);
-            const publicUrl = publicResult.data && publicResult.data.publicUrl ? publicResult.data.publicUrl : '';
-            if (publicUrl) {
-              state.signedUrlCache.set(cleanPath, { url: publicUrl, expiresAt: Date.now() + SIGNED_URL_CACHE_TTL });
-              return publicUrl;
+          function replaceFunction(signature, replacement) {
+            const bounds = findFunctionBounds(source, signature);
+            if (!bounds) {
+              console.log('Function not found:', signature);
+              return false;
             }
+            source = source.slice(0, bounds.start) + replacement + source.slice(bounds.end);
+            return true;
+          }
+
+          replaceFunction('async function getSignedImageUrl(path)', `async function getSignedImageUrl(path) {
+        const cleanPath = String(path || '').trim();
+        if (!cleanPath || !supabaseClient) return '';
+        const cached = state.signedUrlCache.get(cleanPath);
+        if (cached && Date.now() < cached.expiresAt) {
+          return cached.url;
+        }
+
+        try {
+          const result = await supabaseClient.storage
+            .from(APP_CONFIG.STORAGE_BUCKET)
+            .createSignedUrl(cleanPath, SIGNED_URL_TTL_SECONDS);
+          if (result.error) {
             throw new Error(result.error.message);
           }
+          const signedUrl = result.data && result.data.signedUrl ? result.data.signedUrl : '';
+          if (signedUrl) {
+            state.signedUrlCache.set(cleanPath, { url: signedUrl, expiresAt: Date.now() + SIGNED_URL_CACHE_TTL });
+          }
+          return signedUrl;
+        } catch (error) {
+          console.error('Receipt image URL failed:', error);
+          const publicResult = supabaseClient.storage.from(APP_CONFIG.STORAGE_BUCKET).getPublicUrl(cleanPath);
+          const publicUrl = publicResult.data && publicResult.data.publicUrl ? publicResult.data.publicUrl : '';
+          if (publicUrl) {
+            state.signedUrlCache.set(cleanPath, { url: publicUrl, expiresAt: Date.now() + SIGNED_URL_CACHE_TTL });
+            return publicUrl;
+          }
+          return '';
+        }
+      }`);
 
-          `;
-              source = source.slice(0, errorStart) + fallbackBlock + source.slice(nextSignedUrl);
-            }
+          const hydrateBounds = findFunctionBounds(source, 'async function hydrateSignedImageUrls(records)');
+          if (hydrateBounds) {
+            const hydrateBlock = source.slice(hydrateBounds.start, hydrateBounds.end)
+              .replace(/\s*\|\|\s*!state\.entryAuthorized/g, '')
+              .replace(/!state\.entryAuthorized\s*\|\|\s*/g, '');
+            source = source.slice(0, hydrateBounds.start) + hydrateBlock + source.slice(hydrateBounds.end);
+          } else {
+            console.log('Function not found: async function hydrateSignedImageUrls(records)');
           }
 
           if (source === before) {
-            console.log('No image hydration patch was needed.');
+            console.log('No index.html changes were needed.');
             process.exit(0);
           }
 
@@ -78,5 +155,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Add public URL fallback for receipts"
+          git commit -m "Harden read-only receipt image loading"
           git push
