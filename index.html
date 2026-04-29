@@ -960,75 +960,68 @@
       }
 
       .fx-card {
-        padding: 14px;
+        padding: 12px;
         border-radius: 18px;
         background: rgba(23, 32, 45, 0.06);
+        display: grid;
+        gap: 6px;
       }
 
       .fx-card span {
-        display: block;
         color: var(--muted);
-        margin-bottom: 8px;
-        font-size: 0.82rem;
+        font-size: 0.8rem;
       }
 
       .fx-card strong {
-        font-size: 1.1rem;
+        font-size: 1rem;
+        font-variant-numeric: tabular-nums;
       }
 
-      .page-note {
-        margin: 10px 4px 0;
-        font-size: 0.76rem;
-        color: var(--muted);
-        text-align: center;
-        opacity: 0.9;
-      }
-
-      .auth-modal {
+      .auth-modal,
+      .lightbox {
         position: fixed;
         inset: 0;
+        z-index: 30;
         display: grid;
         place-items: center;
-        padding: 24px;
-        background: rgba(7, 10, 14, 0.56);
-        z-index: 28;
-      }
-
-      .auth-modal.hidden {
-        display: none;
+        background: rgba(23, 32, 45, 0.35);
+        backdrop-filter: blur(6px);
+        padding: 18px;
       }
 
       .auth-card {
-        width: min(420px, 100%);
-        padding: 24px;
+        width: min(430px, 100%);
         border-radius: 24px;
         background: rgba(255, 255, 255, 0.96);
-        border: 1px solid rgba(23, 32, 45, 0.08);
-        box-shadow: 0 24px 70px rgba(23, 32, 45, 0.18);
-      }
-
-      .auth-card h3 {
-        margin-bottom: 10px;
+        box-shadow: 0 24px 70px rgba(23, 32, 45, 0.2);
+        padding: 24px;
       }
 
       .auth-copy {
-        margin: 0 0 14px;
+        margin: 10px 0 18px;
         color: var(--muted);
       }
 
       .auth-form {
         display: grid;
-        gap: 12px;
+        gap: 14px;
       }
 
       .auth-form label {
         display: grid;
-        gap: 8px;
+        gap: 6px;
       }
 
-      .auth-form span {
-        font-size: 0.88rem;
+      .auth-form label span {
         color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      .auth-error {
+        min-height: 20px;
+        margin: 0;
+        color: #b42318;
+        font-size: 0.86rem;
       }
 
       .auth-actions {
@@ -1037,497 +1030,380 @@
         gap: 10px;
       }
 
-      .auth-error {
-        min-height: 20px;
-        margin: 0;
-        color: #b42318;
-        font-size: 0.88rem;
-      }
-
       .lightbox {
-        position: fixed;
-        inset: 0;
-        background: rgba(7, 10, 14, 0.82);
-        display: grid;
-        place-items: center;
-        padding: 32px;
-        z-index: 30;
-      }
-
-      .lightbox.hidden {
-        display: none;
+        background: rgba(11, 17, 24, 0.74);
       }
 
       .lightbox img {
-        max-width: min(90vw, 960px);
-        max-height: calc(100vh - 96px);
-        border-radius: 24px;
-        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
+        max-width: min(92vw, 1100px);
+        max-height: 86vh;
+        border-radius: 18px;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.4);
       }
 
       .lightbox-close {
         position: fixed;
-        top: 22px;
-        right: 22px;
+        top: 24px;
+        right: 24px;
+        color: #fff;
+        background: rgba(255, 255, 255, 0.18);
       }
 
-      @media (max-width: 760px) {
-        .page-shell {
-          width: min(100% - 12px, 1440px);
-          padding-top: 10px;
-        }
-
-        .hero,
-        .panel-head,
-        .compact-head {
+      @media (max-width: 900px) {
+        .hero {
+          align-items: flex-start;
           flex-direction: column;
         }
 
-        .hero {
-          align-items: stretch;
-          gap: 8px;
+        .hero-actions {
+          width: 100%;
+          justify-content: space-between;
         }
 
-        .hero-brand {
-          align-items: flex-start;
+        .panel-head {
+          flex-direction: column;
         }
 
         .table-head {
-          flex-direction: row;
-          align-items: center;
-          gap: 6px;
+          gap: 10px;
         }
 
-        .hero-actions {
+        .toolbar {
+          width: 100%;
           justify-content: flex-start;
+          overflow-x: visible;
+          flex-wrap: wrap;
+        }
+
+        .toolbar-popover {
+          position: static;
+        }
+
+        .toolbar-filters,
+        .sort-menu {
+          left: 0;
+          right: auto;
+        }
+
+        .summary-strip {
+          overflow-x: auto;
+          flex-wrap: nowrap;
+          padding-bottom: 4px;
+        }
+
+        .summary-item {
+          white-space: nowrap;
+        }
+      }
+
+      @media (max-width: 680px) {
+        .page-shell {
+          width: min(100% - 20px, 680px);
+          padding-top: 10px;
+        }
+
+        h1 {
+          font-size: 1.05rem;
+        }
+
+        .entry-drawer.is-open {
+          padding: 12px;
+        }
+
+        .expense-form,
+        .fx-controls,
+        .fx-grid {
+          grid-template-columns: 1fr;
         }
 
         .toolbar-filters {
           grid-template-columns: 1fr;
-          width: min(360px, calc(100vw - 26px));
-          left: auto;
-          right: 0;
+          width: calc(100vw - 30px);
         }
 
-        .filter-confirm {
-          justify-self: stretch;
-        }
-
-        .fx-controls {
-          display: grid;
-          grid-template-columns: 1fr;
-        }
-
-        .summary-strip {
-          gap: 6px;
-        }
-
-        .table-pagination {
-          justify-content: center;
-        }
-
-        .panel-form,
-        .panel-table {
-          padding: 12px;
-        }
-
-        .entry-drawer.is-open {
-          max-height: none;
-          padding-bottom: 0;
-        }
-
-        .expense-form {
-          grid-template-columns: 1fr;
-        }
-
-        .expense-form .compact-span-2 {
-          grid-column: auto;
-        }
-
-        #lkrPreview {
-          width: 100%;
+        .expense-table {
+          min-width: 660px;
         }
 
         .expense-table thead th,
         .expense-table tbody td {
-          padding: 12px 10px;
-        }
-
-        .row-action-button {
-          width: 28px;
-          height: 28px;
-          border-radius: 9px;
-        }
-
-        .fx-fab {
-          right: 10px;
-          bottom: 10px;
-          width: 42px;
-          height: 42px;
+          padding: 12px 14px;
         }
 
         .fx-panel {
-          right: 10px;
-          bottom: 62px;
-          width: calc(100vw - 20px);
+          right: 14px;
+          bottom: 84px;
+        }
+
+        .fx-fab {
+          right: 14px;
+          bottom: 18px;
         }
       }
     </style>
   </head>
   <body>
-    <div class="page-shell">
+    <main class="page-shell">
       <header class="hero">
         <div class="hero-brand">
-          <h1><span class="brand-dav">DAV</span> 建设 · 斯里兰卡 · 台账</h1>
+          <div>
+            <p class="eyebrow">DAV construction · Reimbursements</p>
+            <h1><span class="brand-dav">DAV</span> 斯里兰卡报销</h1>
+          </div>
+          <span class="connection-indicator" id="connectionBadge" aria-label="Supabase 连接状态" title="Supabase 连接状态">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 3L4 7V12C4 16.5 7.2 20.2 12 21C16.8 20.2 20 16.5 20 12V7L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+              <path d="M8.8 12.2L11 14.4L15.4 9.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
         </div>
         <div class="hero-actions">
-          <button
-            type="button"
-            class="entry-toggle"
-            id="entryToggle"
-            aria-expanded="false"
-            aria-controls="entryDrawer"
-            aria-label="登录后录入报销"
-          >
+          <button type="button" class="ghost-button auth-action" id="authActionButton">登录</button>
+          <button type="button" class="primary-button entry-toggle" id="entryToggle" aria-label="录入报销" title="录入报销">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M14 4H7.5C6.67 4 6 4.67 6 5.5V18.5C6 19.33 6.67 20 7.5 20H14"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <path
-                d="M11 12H20"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-              <path
-                d="M17 9L20 12L17 15"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
+              <path d="M12 5V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
             </svg>
           </button>
-          <button type="button" class="ghost-button auth-action" id="authActionButton">登录</button>
-          <div
-            class="connection-indicator"
-            id="connectionBadge"
-            role="status"
-            aria-live="polite"
-            aria-label="Supabase 状态"
-            title="Supabase 状态"
-          >
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M6 7.5C6 6.12 8.69 5 12 5C15.31 5 18 6.12 18 7.5C18 8.88 15.31 10 12 10C8.69 10 6 8.88 6 7.5Z"
-                stroke="currentColor"
-                stroke-width="1.7"
-              />
-              <path d="M6 7.5V16.5C6 17.88 8.69 19 12 19C15.31 19 18 17.88 18 16.5V7.5" stroke="currentColor" stroke-width="1.7"/>
-              <path d="M6 12C6 13.38 8.69 14.5 12 14.5C15.31 14.5 18 13.38 18 12" stroke="currentColor" stroke-width="1.7"/>
-            </svg>
-          </div>
         </div>
       </header>
 
-      <main class="dashboard">
-        <section class="panel panel-form entry-drawer" id="entryDrawer" aria-hidden="true">
-          <div class="panel-head compact-head">
-            <div>
-              <p class="section-kicker">新增</p>
-              <h2>录入报销</h2>
-            </div>
-            <p class="panel-note">图片上传后会显示缩略图。</p>
+      <section class="panel panel-form entry-drawer" id="entryDrawer" aria-hidden="true">
+        <div class="panel-head compact-head">
+          <div>
+            <p class="section-kicker">Expense Entry</p>
+            <h2>新增报销</h2>
+          </div>
+          <p class="config-note" id="statusLine">正在连接 Supabase...</p>
+        </div>
+
+        <form id="reimbursementForm" class="expense-form">
+          <label>
+            <span>日期</span>
+            <input type="date" name="expense_date" id="expenseDate" required />
+          </label>
+
+          <label>
+            <span>报销人</span>
+            <input
+              type="text"
+              name="reimburser"
+              id="reimburserInput"
+              list="reimburserOptions"
+              placeholder="例如：马天睿"
+              autocomplete="name"
+            />
+            <datalist id="reimburserOptions"></datalist>
+          </label>
+
+          <label>
+            <span>类型</span>
+            <input type="text" name="expense_type" id="expenseType" placeholder="材料 / 交通 / 工资" required />
+          </label>
+
+          <label>
+            <span>项目</span>
+            <input type="text" name="project_name" id="projectName" placeholder="项目名称" required />
+          </label>
+
+          <label>
+            <span>支付币种</span>
+            <select name="currency_code" id="currencyCode" required>
+              <option value="LKR">LKR</option>
+              <option value="CNY">RMB</option>
+              <option value="PHP">PHP</option>
+              <option value="USD">USD</option>
+            </select>
+          </label>
+
+          <label>
+            <span>原币金额</span>
+            <input type="number" name="amount_original" id="amountOriginal" min="0" step="0.01" placeholder="0.00" required />
+          </label>
+
+          <label>
+            <span>汇率到 LKR</span>
+            <input type="number" name="exchange_rate_to_lkr" id="exchangeRateToLkr" min="0" step="0.001" placeholder="1.000" required />
+          </label>
+          <p class="config-note compact-span-2" id="lkrPreview">LKR 预览：--</p>
+
+          <label class="file-field compact-span-2">
+            <span>报销图片</span>
+            <input type="file" name="receipt_image" id="receiptImage" accept="image/*" multiple />
+          </label>
+
+          <div class="image-preview compact-span-2" id="imagePreview">
+            <span>未选择图片</span>
           </div>
 
-          <form id="reimbursementForm" class="expense-form">
-            <label>
-              <span>日期</span>
-              <input type="date" name="expense_date" id="expenseDate" required />
-            </label>
+          <div class="form-actions">
+            <button type="button" class="ghost-button hidden" id="cancelEditButton">取消编辑</button>
+            <button type="submit" class="primary-button" id="submitButton">保存记录</button>
+          </div>
+        </form>
+      </section>
 
-            <label>
-              <span>报销人</span>
-              <input
-                type="text"
-                name="reimburser"
-                id="reimburserInput"
-                list="reimburserOptions"
-                placeholder="选择或输入报销人"
-              />
-            </label>
-            <datalist id="reimburserOptions"></datalist>
-
-            <label>
-              <span>类型</span>
-              <input
-                type="text"
-                name="expense_type"
-                id="expenseType"
-                list="expenseTypeOptions"
-                placeholder="例如：材料 / 交通 / 人工"
-                required
-              />
-            </label>
-            <datalist id="expenseTypeOptions">
-              <option value="材料"></option>
-              <option value="交通"></option>
-              <option value="人工"></option>
-              <option value="设备"></option>
-              <option value="餐饮"></option>
-            </datalist>
-
-            <label>
-              <span>项目</span>
-              <input type="text" name="project_name" id="projectName" placeholder="项目名称" required />
-            </label>
-
-            <label>
-              <span>币种</span>
-              <select name="currency_code" id="currencyCode">
-                <option value="LKR">LKR</option>
-                <option value="CNY">CNY</option>
-                <option value="PHP">PHP</option>
-                <option value="USD">USD</option>
-              </select>
-            </label>
-
-            <label>
-              <span>金额</span>
-              <input
-                type="number"
-                name="amount_original"
-                id="amountOriginal"
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-                required
-              />
-            </label>
-
-            <label>
-              <span>实时汇率（1 币种 = ? LKR，3位小数）</span>
-              <input
-                type="number"
-                name="exchange_rate_to_lkr"
-                id="exchangeRateToLkr"
-                min="0"
-                step="0.001"
-                placeholder="1.000"
-                required
-              />
-            </label>
-            <p class="config-note compact-span-2" id="lkrPreview">折算 PHP：--</p>
-
-            <label class="file-field compact-span-2">
-              <span>图片（可多选）</span>
-              <input type="file" name="receipt_image" id="receiptImage" accept="image/*" multiple />
-            </label>
-
-            <div class="image-preview compact-span-2" id="imagePreview">
-              <span>未选择图片</span>
-            </div>
-
-            <div class="form-actions compact-span-2">
-              <button type="submit" class="primary-button" id="submitButton">保存记录</button>
-              <button type="button" class="ghost-button hidden" id="cancelEditButton">取消编辑</button>
-            </div>
-            <p class="config-note compact-span-2">保存时会锁定该笔汇率快照，后续查看金额不会因新汇率变动。</p>
-          </form>
-        </section>
-
-        <section class="panel panel-table">
-          <div class="panel-head table-head">
-            <div class="table-heading">
-              <p class="section-kicker">查询</p>
-              <h2>报销明细</h2>
-            </div>
-            <div class="toolbar" aria-label="日期筛选与导出">
-              <div class="toolbar-popover" id="filterPopover">
-                <button
-                  type="button"
-                  class="secondary-button toolbar-icon"
-                  id="filterButton"
-                  aria-label="筛选"
-                  aria-controls="filterControls"
-                  aria-expanded="false"
-                  title="筛选"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M4 6H20L14 13.2V18L10 20V13.2L4 6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-                  </svg>
-                  <span class="sr-only">筛选</span>
-                </button>
-                <div class="toolbar-filters" id="filterControls" aria-hidden="true">
-                  <label>
-                    <span class="sr-only">开始日期</span>
-                    <input type="date" id="filterStartDate" aria-label="开始日期" title="开始日期" />
-                  </label>
-                  <label>
-                    <span class="sr-only">结束日期</span>
-                    <input type="date" id="filterEndDate" aria-label="结束日期" title="结束日期" />
-                  </label>
-                  <label>
-                    <span class="sr-only">报销人筛选</span>
-                    <input type="text" id="filterReimburser" aria-label="报销人筛选" title="报销人筛选" placeholder="报销人" />
-                  </label>
-                  <label class="toolbar-status">
-                    <span class="sr-only">状态筛选</span>
-                    <select id="filterStatus" aria-label="状态筛选" title="状态筛选">
-                      <option value="">全部状态</option>
-                      <option value="待报销">待报销</option>
-                      <option value="已报销">已报销</option>
-                    </select>
-                  </label>
-                  <button
-                    type="button"
-                    class="secondary-button toolbar-icon filter-confirm"
-                    id="filterConfirm"
-                    aria-label="确认筛选"
-                    title="确认筛选"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                      <path d="M5 12.5L10 17L19 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    <span class="sr-only">确认筛选</span>
-                  </button>
-                </div>
-              </div>
-              <div class="toolbar-popover" id="sortPopover">
-                <button
-                  type="button"
-                  class="ghost-button toolbar-icon"
-                  id="sortButton"
-                  aria-label="排序"
-                  aria-controls="sortMenu"
-                  aria-expanded="false"
-                  title="排序"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M7 6V18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                    <path d="M4.5 8.5L7 6L9.5 8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M17 18V6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                    <path d="M14.5 15.5L17 18L19.5 15.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                  <span class="sr-only">排序</span>
-                </button>
-                <div class="sort-menu" id="sortMenu" aria-hidden="true">
-                  <button type="button" class="sort-option" data-sort-order="asc">从旧到新</button>
-                  <button type="button" class="sort-option" data-sort-order="desc">从新到旧</button>
-                </div>
-              </div>
+      <section class="panel panel-table">
+        <div class="panel-head compact-head table-head">
+          <div class="table-heading">
+            <p class="section-kicker">Records</p>
+            <h2>报销明细</h2>
+          </div>
+          <div class="toolbar">
+            <div class="toolbar-popover" id="filterPopover">
               <button
                 type="button"
-                class="primary-button toolbar-icon"
-                id="downloadButton"
-                aria-label="下载 CSV"
-                title="下载 CSV"
+                class="secondary-button toolbar-icon"
+                id="filterButton"
+                aria-label="筛选"
+                aria-expanded="false"
+                title="筛选"
               >
                 <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M12 4V14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                  <path d="M8.5 10.5L12 14L15.5 10.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M5 18H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                  <path d="M4 6H20L14 13V19L10 21V13L4 6Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
                 </svg>
-                <span class="sr-only">下载 CSV</span>
               </button>
+              <div class="toolbar-filters" id="filterControls">
+                <label>
+                  <span class="sr-only">开始日期</span>
+                  <input type="date" id="filterStartDate" aria-label="开始日期" title="开始日期" />
+                </label>
+                <label>
+                  <span class="sr-only">结束日期</span>
+                  <input type="date" id="filterEndDate" aria-label="结束日期" title="结束日期" />
+                </label>
+                <label>
+                  <span class="sr-only">报销人筛选</span>
+                  <input type="text" id="filterReimburser" aria-label="报销人筛选" title="报销人筛选" placeholder="报销人" />
+                </label>
+                <label class="toolbar-status">
+                  <span class="sr-only">状态筛选</span>
+                  <select id="filterStatus" aria-label="状态筛选" title="状态筛选">
+                    <option value="">全部状态</option>
+                    <option value="待报销">待报销</option>
+                    <option value="已报销">已报销</option>
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  class="secondary-button toolbar-icon filter-confirm"
+                  id="filterConfirm"
+                  aria-label="确认筛选"
+                  title="确认筛选"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M5 12L10 17L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </button>
+              </div>
             </div>
-          </div>
-
-          <div class="summary-strip">
-            <div class="summary-item">
-              <span>记录数</span>
-              <strong id="recordCount">0</strong>
+            <div class="toolbar-popover" id="sortPopover">
+              <button
+                type="button"
+                class="secondary-button toolbar-icon"
+                id="sortButton"
+                aria-label="排序"
+                aria-expanded="false"
+                title="排序"
+              >
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M8 5V19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  <path d="M5 8L8 5L11 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M16 19V5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  <path d="M13 16L16 19L19 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+              <div class="sort-menu" id="sortMenu">
+                <button type="button" class="sort-option is-active" data-sort-order="desc">新到旧</button>
+                <button type="button" class="sort-option" data-sort-order="asc">旧到新</button>
+              </div>
             </div>
-            <div class="summary-item summary-amount">
-              <span id="totalAmountLabel">合计（PHP）</span>
-              <strong id="totalAmount">0.00</strong>
-              <select id="amountDisplayCurrency" class="summary-currency-select" aria-label="金额显示币种">
-                <option value="PHP" selected>PHP</option>
-                <option value="LKR">LKR</option>
-                <option value="CNY">RMB</option>
-                <option value="USD">USD</option>
-              </select>
-            </div>
-            <div class="summary-item summary-status">
-              <span>状态</span>
-              <strong id="statusLine">等待加载</strong>
-            </div>
+            <button type="button" class="secondary-button toolbar-icon" id="downloadButton" aria-label="下载 CSV" title="下载 CSV">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 4V15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                <path d="M8 11L12 15L16 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M5 19H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+            </button>
           </div>
+        </div>
 
-          <div class="table-pagination">
-            <button type="button" class="ghost-button pagination-button" id="prevPageButton">上一页</button>
-            <span class="page-info" id="pageInfo">第 1 / 1 页</span>
-            <button type="button" class="ghost-button pagination-button" id="nextPageButton">下一页</button>
+        <div class="summary-strip" aria-live="polite">
+          <div class="summary-item">
+            <span>记录</span>
+            <strong id="recordCount">0</strong>
           </div>
-
-          <div class="table-wrap">
-            <table class="expense-table is-auth-locked" id="expenseTable">
-              <thead>
-                <tr>
-                  <th>No</th>
-                  <th>报销人</th>
-                  <th>日期</th>
-                  <th>类型</th>
-                  <th>项目</th>
-                  <th>支付币种</th>
-                  <th id="amountHeader">金额（PHP）</th>
-                  <th>图片</th>
-                  <th>状态</th>
-                  <th class="action-column">操作</th>
-                </tr>
-              </thead>
-              <tbody id="expenseTableBody">
-                <tr>
-                  <td colspan="9" class="empty-row">请先配置 Supabase 后加载数据。</td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="summary-item">
+            <span id="totalAmountLabel">当前页合计</span>
+            <select id="amountDisplayCurrency" class="summary-currency-select" aria-label="显示金额币种">
+              <option value="LKR">LKR</option>
+              <option value="PHP" selected>PHP</option>
+              <option value="CNY">RMB</option>
+              <option value="USD">USD</option>
+            </select>
+            <strong id="totalAmount">0.00</strong>
           </div>
-        </section>
-      </main>
-      <p class="page-note">如有疑问请联系 Rey’s 微信：18226928315</p>
-    </div>
+        </div>
 
-      <button
-        type="button"
-        class="fx-fab"
-        id="fxToggle"
-        aria-expanded="false"
-        aria-controls="fxPanel"
-        aria-label="打开汇率计算器"
-      >
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <rect x="5" y="3.5" width="14" height="17" rx="2.2" stroke="currentColor" stroke-width="1.8"/>
-          <rect x="7.5" y="6.4" width="9" height="3" rx="0.8" fill="currentColor"/>
-          <path d="M8 12H10M14 12H16M8 15H10M14 15H16M8 18H10M14 18H16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-      </button>
+        <div class="table-pagination" aria-label="分页">
+          <button type="button" class="secondary-button pagination-button" id="prevPageButton">上一页</button>
+          <span class="page-info" id="pageInfo">第 1 / 1 页</span>
+          <button type="button" class="secondary-button pagination-button" id="nextPageButton">下一页</button>
+        </div>
+
+        <div class="table-wrap">
+          <table class="expense-table is-auth-locked" id="expenseTable">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>报销人</th>
+                <th>日期</th>
+                <th>类型</th>
+                <th>项目</th>
+                <th>支付币种</th>
+                <th id="amountHeader">金额 (PHP)</th>
+                <th>图片</th>
+                <th>状态</th>
+                <th class="action-column">操作</th>
+              </tr>
+            </thead>
+            <tbody id="expenseTableBody">
+              <tr>
+                <td colspan="9" class="empty-row">正在加载数据...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <button type="button" class="fx-fab" id="fxToggle" aria-label="打开汇率换算" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M7 7H17M7 12H17M7 17H13" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+      </svg>
+    </button>
 
     <aside class="fx-panel" id="fxPanel" aria-hidden="true">
       <div class="fx-head">
         <div>
-          <p class="section-kicker">汇率</p>
-          <h3>即时换算</h3>
+          <p class="section-kicker">FX Calculator</p>
+          <h3>汇率换算</h3>
         </div>
-        <button type="button" class="icon-button" id="fxClose" aria-label="关闭汇率计算器">×</button>
+        <button type="button" class="icon-button" id="fxClose" aria-label="关闭汇率换算">×</button>
       </div>
 
       <div class="fx-controls">
         <label>
           <span>金额</span>
-          <input type="number" id="fxAmount" min="0" step="0.01" value="1" />
+          <input type="number" min="0" step="0.01" id="fxAmount" value="100" />
         </label>
         <label>
-          <span>基础货币</span>
+          <span>币种</span>
           <select id="fxBaseCurrency">
-            <option value="LKR">斯里兰卡卢比</option>
-            <option value="CNY">人民币</option>
-            <option value="PHP">菲律宾比索</option>
-            <option value="USD" selected>美元</option>
+            <option value="LKR">LKR</option>
+            <option value="CNY">RMB</option>
+            <option value="PHP">PHP</option>
+            <option value="USD">USD</option>
           </select>
         </label>
       </div>
@@ -2005,97 +1881,110 @@
         });
       }
 
-      function setFilterExpanded(expanded) {
-        elements.filterPopover.classList.toggle('is-expanded', expanded);
-        elements.filterControls.setAttribute('aria-hidden', String(!expanded));
-        elements.filterButton.setAttribute('aria-expanded', String(expanded));
-        elements.filterButton.setAttribute('title', expanded ? '收起筛选' : '展开筛选');
-      }
-
-      function handleFilterButtonClick() {
-        const willExpand = !elements.filterPopover.classList.contains('is-expanded');
-        setSortExpanded(false);
-        setFilterExpanded(willExpand);
-        if (willExpand) {
-          window.setTimeout(function () {
-            elements.filterStartDate.focus();
-          }, 10);
-        }
-      }
-
-      async function handleFilterConfirmClick() {
-        if (!elements.filterPopover.classList.contains('is-expanded')) {
-          setFilterExpanded(true);
+      function handleEntryToggle() {
+        if (!state.entryAuthorized) {
+          openAuthModal();
+          setStatus('请先登录后再录入或管理报销');
           return;
         }
-        await loadRecords({ resetPage: true });
-        setFilterExpanded(false);
-      }
-
-      function setSortExpanded(expanded) {
-        elements.sortPopover.classList.toggle('is-expanded', expanded);
-        elements.sortMenu.setAttribute('aria-hidden', String(!expanded));
-        elements.sortButton.setAttribute('aria-expanded', String(expanded));
-        elements.sortButton.setAttribute('title', expanded ? '收起排序' : '展开排序');
-      }
-
-      function updateSortMenuState() {
-        const buttons = elements.sortMenu.querySelectorAll('[data-sort-order]');
-        buttons.forEach(function (button) {
-          const isActive = button.dataset.sortOrder === state.sortOrder;
-          button.classList.toggle('is-active', isActive);
-          button.setAttribute('aria-pressed', String(isActive));
-        });
-      }
-
-      async function applySortOrder(nextSortOrder) {
-        const normalized = nextSortOrder === 'desc' ? 'desc' : 'asc';
-        state.sortOrder = normalized;
-        updateSortMenuState();
-        await loadRecords({ resetPage: true });
-        setSortExpanded(false);
-      }
-
-      function handleSortButtonClick() {
-        const willExpand = !elements.sortPopover.classList.contains('is-expanded');
-        setFilterExpanded(false);
-        setSortExpanded(willExpand);
+        toggleEntryDrawer();
       }
 
       function toggleEntryDrawer(forceOpen) {
-        const shouldOpen =
-          typeof forceOpen === 'boolean' ? forceOpen : !elements.entryDrawer.classList.contains('is-open');
+        const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : !elements.entryDrawer.classList.contains('is-open');
         elements.entryDrawer.classList.toggle('is-open', shouldOpen);
         elements.entryDrawer.setAttribute('aria-hidden', String(!shouldOpen));
         elements.entryToggle.setAttribute('aria-expanded', String(shouldOpen));
       }
 
-      function handleEntryToggle() {
-        if (elements.entryDrawer.classList.contains('is-open')) {
-          toggleEntryDrawer(false);
-          return;
-        }
+      function setFilterExpanded(isExpanded) {
+        elements.filterPopover.classList.toggle('is-expanded', isExpanded);
+        elements.filterButton.setAttribute('aria-expanded', String(isExpanded));
+      }
 
-        if (!state.entryAuthorized) {
-          openAuthModal();
-          return;
-        }
+      function setSortExpanded(isExpanded) {
+        elements.sortPopover.classList.toggle('is-expanded', isExpanded);
+        elements.sortButton.setAttribute('aria-expanded', String(isExpanded));
+      }
 
-        toggleEntryDrawer(true);
+      function updateSortMenuState() {
+        elements.sortMenu.querySelectorAll('[data-sort-order]').forEach(function (button) {
+          button.classList.toggle('is-active', button.dataset.sortOrder === state.sortOrder);
+        });
+      }
+
+      function handleFilterButtonClick() {
+        setFilterExpanded(!elements.filterPopover.classList.contains('is-expanded'));
+        setSortExpanded(false);
+      }
+
+      function handleSortButtonClick() {
+        setSortExpanded(!elements.sortPopover.classList.contains('is-expanded'));
+        setFilterExpanded(false);
+      }
+
+      async function handleFilterConfirmClick() {
+        setFilterExpanded(false);
+        await loadRecords({ resetPage: true });
+      }
+
+      async function applySortOrder(nextOrder) {
+        state.sortOrder = nextOrder === 'asc' ? 'asc' : 'desc';
+        updateSortMenuState();
+        setSortExpanded(false);
+        await loadRecords({ resetPage: true });
+      }
+
+      function normalizeCurrencyCode(value) {
+        const text = String(value || '').trim().toUpperCase();
+        if (text === 'RMB') return 'CNY';
+        if (FX_CURRENCIES.includes(text)) return text;
+        return 'LKR';
+      }
+
+      function getNormalizedCurrency(value) {
+        return normalizeCurrencyCode(value);
+      }
+
+      function getCurrencyLabelForDisplay(currencyCode) {
+        return currencyCode === 'CNY' ? 'RMB' : currencyCode;
+      }
+
+      function roundToTwo(value) {
+        const number = Number(value || 0);
+        if (!Number.isFinite(number)) return 0;
+        return Math.round((number + Number.EPSILON) * 100) / 100;
+      }
+
+      function roundToThree(value) {
+        const number = Number(value || 0);
+        if (!Number.isFinite(number)) return 0;
+        return Math.round((number + Number.EPSILON) * 1000) / 1000;
+      }
+
+      function toPositiveNumber(value) {
+        const number = Number(value || 0);
+        return Number.isFinite(number) && number > 0 ? number : 0;
       }
 
       function getLocalDateString(date = new Date()) {
-        const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-        return localDate.toISOString().slice(0, 10);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return year + '-' + month + '-' + day;
       }
 
       function getLocalYearMonthString(date = new Date()) {
-        return getLocalDateString(date).slice(0, 7);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        return year + '/' + month;
       }
 
       function formatDate(value) {
         if (!value) return '-';
-        return dateFormatter.format(new Date(value + 'T00:00:00'));
+        const date = new Date(value + 'T00:00:00');
+        if (Number.isNaN(date.getTime())) return value;
+        return dateFormatter.format(date);
       }
 
       function formatAmount(value) {
@@ -2103,260 +1992,182 @@
       }
 
       function escapeHtml(value) {
-        return String(value)
-          .replaceAll('&', '&amp;')
-          .replaceAll('<', '&lt;')
-          .replaceAll('>', '&gt;')
-          .replaceAll('"', '&quot;')
-          .replaceAll("'", '&#39;');
+        return String(value ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
       }
 
       function escapeCsv(value) {
-        let text = String(value ?? '').replaceAll('\r\n', '\n').replaceAll('\r', '\n');
-        if (/^[=\-+@]/.test(text) || /^\t/.test(text)) {
-          text = "'" + text;
-        }
-        if (/[",\n]/.test(text)) {
-          return '"' + text.replaceAll('"', '""') + '"';
-        }
-        return text;
+        const text = String(value ?? '');
+        return '"' + text.replace(/"/g, '""') + '"';
       }
 
-      function getNormalizedCurrency(value) {
-        const text = String(value || 'LKR').trim().toUpperCase();
-        return FX_CURRENCIES.includes(text) ? text : 'LKR';
+      function calculateLkrAmount(amount, rate) {
+        return roundToTwo(toPositiveNumber(amount) * toPositiveNumber(rate));
       }
 
-      function toPositiveNumber(value) {
-        const amount = Number(value);
-        if (!Number.isFinite(amount) || amount <= 0) return 0;
-        return amount;
-      }
-
-      function roundToTwo(value) {
-        return Math.round(Number(value || 0) * 100) / 100;
-      }
-
-      function roundToThree(value) {
-        return Math.round(Number(value || 0) * 1000) / 1000;
-      }
-
-      function roundToEight(value) {
-        return Math.round(Number(value || 0) * 100000000) / 100000000;
-      }
-
-      function getCurrencyLabelForDisplay(currencyCode) {
-        if (currencyCode === 'CNY') return 'RMB';
-        return currencyCode;
-      }
-
-      function updateAmountDisplayUi() {
-        const code = getNormalizedCurrency(state.displayCurrency || 'PHP');
-        const label = getCurrencyLabelForDisplay(code);
-        if (elements.totalAmountLabel) {
-          elements.totalAmountLabel.textContent = '合计（' + label + '）';
-        }
-        if (elements.amountHeader) {
-          elements.amountHeader.textContent = '金额（' + label + '）';
-        }
-      }
-
-      async function ensureLkrDisplayRates(force = false) {
-        if (
-          !force &&
-          toPositiveNumber(state.lkrDisplayRates.PHP) &&
-          toPositiveNumber(state.lkrDisplayRates.CNY) &&
-          toPositiveNumber(state.lkrDisplayRates.USD)
-        ) {
-          return state.lkrDisplayRates;
-        }
-        const payload = await fetchRates('LKR');
-        state.lkrDisplayRates.PHP = toPositiveNumber(payload.rates.PHP);
-        state.lkrDisplayRates.CNY = toPositiveNumber(payload.rates.CNY);
-        state.lkrDisplayRates.USD = toPositiveNumber(payload.rates.USD);
-        state.phpPerLkr = state.lkrDisplayRates.PHP;
-        return state.lkrDisplayRates;
-      }
-
-      async function ensurePhpPerLkr(force = false) {
-        if (!force && toPositiveNumber(state.phpPerLkr)) return state.phpPerLkr;
-        const rates = await ensureLkrDisplayRates(force);
-        const phpRate = Number(rates.PHP || 0);
-        if (!Number.isFinite(phpRate) || phpRate <= 0) {
-          throw new Error('汇率接口未返回有效 PHP 汇率');
-        }
-        state.phpPerLkr = phpRate;
-        return phpRate;
-      }
-
-      function computeAmountLkr(amountOriginal, exchangeRate, currencyCode) {
-        const amount = Number(amountOriginal || 0);
-        const rate = Number(exchangeRate || 0);
-        if (!Number.isFinite(amount) || amount <= 0) return 0;
-        if (currencyCode === 'LKR') return amount;
-        if (!Number.isFinite(rate) || rate <= 0) return 0;
-        return amount * rate;
-      }
-
-      function getRecordLkrRate(record, targetCurrency) {
-        const currency = getNormalizedCurrency(targetCurrency || 'LKR');
+      function getFxRateFromLkr(record, targetCurrency) {
+        const currency = getNormalizedCurrency(targetCurrency);
         if (currency === 'LKR') return 1;
-        const fieldMap = {
-          PHP: 'fx_lkr_to_php',
-          CNY: 'fx_lkr_to_cny',
-          USD: 'fx_lkr_to_usd',
-        };
-        const fieldName = fieldMap[currency];
-        const lockedRate = fieldName ? toPositiveNumber(record[fieldName]) : 0;
-        if (lockedRate) return lockedRate;
-        const paymentCurrency = getNormalizedCurrency(record.currency_code || 'LKR');
-        const exchangeRate = toPositiveNumber(record.exchange_rate_to_lkr);
-        if (paymentCurrency === currency && exchangeRate > 0) {
-          return roundToEight(1 / exchangeRate);
-        }
-        const fallbackRate = toPositiveNumber(state.lkrDisplayRates[currency]);
-        return fallbackRate;
+        if (currency === 'PHP') return toPositiveNumber(record.fx_lkr_to_php) || toPositiveNumber(state.lkrDisplayRates.PHP);
+        if (currency === 'CNY') return toPositiveNumber(record.fx_lkr_to_cny) || toPositiveNumber(state.lkrDisplayRates.CNY);
+        if (currency === 'USD') return toPositiveNumber(record.fx_lkr_to_usd) || toPositiveNumber(state.lkrDisplayRates.USD);
+        return 0;
       }
 
       function getRecordAmountByCurrency(record, targetCurrency) {
-        const currency = getNormalizedCurrency(targetCurrency || 'LKR');
-        const paymentCurrency = getNormalizedCurrency(record.currency_code || 'LKR');
-        const amountOriginal = toPositiveNumber(record.amount_original);
-        if (paymentCurrency === currency && amountOriginal) {
-          return amountOriginal;
-        }
-        const amountLkr = toPositiveNumber(record.amount_lkr);
-        if (!amountLkr) return 0;
+        const amountLkr = toPositiveNumber(record && record.amount_lkr);
+        const currency = getNormalizedCurrency(targetCurrency || state.displayCurrency);
+        const rate = getFxRateFromLkr(record || {}, currency);
         if (currency === 'LKR') return amountLkr;
-        const rate = getRecordLkrRate(record, currency);
         if (!rate) return 0;
-        return amountLkr * rate;
+        return roundToTwo(amountLkr * rate);
       }
 
-      function getRecordAmountPhp(record) {
-        return getRecordAmountByCurrency(record, 'PHP');
+      function updateAmountDisplayUi() {
+        const currency = getNormalizedCurrency(state.displayCurrency || 'PHP');
+        elements.amountDisplayCurrency.value = currency;
+        const label = getCurrencyLabelForDisplay(currency);
+        elements.amountHeader.textContent = '金额 (' + label + ')';
+        elements.totalAmountLabel.textContent = '当前页合计';
       }
 
-      function updateAmountPreview() {
-        const currencyCode = getNormalizedCurrency(elements.currencyCode.value);
-        const amountOriginal = Number(elements.amountOriginal.value || 0);
-        const exchangeRate = Number(elements.exchangeRateToLkr.value || 0);
-        const amountLkr = computeAmountLkr(amountOriginal, exchangeRate, currencyCode);
-        const phpRate = toPositiveNumber(state.phpPerLkr);
-        if (!amountLkr || !phpRate) {
-          elements.lkrPreview.textContent = '折算 PHP：--';
-          return;
-        }
-        const amountPhp = roundToTwo(amountLkr * phpRate);
-        elements.lkrPreview.textContent = '折算 PHP：' + formatAmount(amountPhp);
-      }
-
-      async function refreshPhpPreview(force = false) {
+      async function ensureLkrDisplayRates(forceRefresh) {
+        const needsRefresh =
+          forceRefresh ||
+          !toPositiveNumber(state.lkrDisplayRates.PHP) ||
+          !toPositiveNumber(state.lkrDisplayRates.CNY) ||
+          !toPositiveNumber(state.lkrDisplayRates.USD);
+        if (!needsRefresh) return state.lkrDisplayRates;
         try {
-          await ensurePhpPerLkr(force);
+          const payload = await fetchRates('LKR');
+          state.lkrDisplayRates.PHP = toPositiveNumber(payload.rates.PHP);
+          state.lkrDisplayRates.CNY = toPositiveNumber(payload.rates.CNY);
+          state.lkrDisplayRates.USD = toPositiveNumber(payload.rates.USD);
         } catch (error) {
-          console.error(error);
-          setStatus('PHP 汇率获取失败');
+          console.error('LKR 显示汇率获取失败:', error);
         }
-        updateAmountPreview();
+        return state.lkrDisplayRates;
       }
 
-      async function fillRateToLkr(force = false) {
-        const currencyCode = getNormalizedCurrency(elements.currencyCode.value);
-        if (currencyCode === 'LKR') {
-          if (force || !toPositiveNumber(elements.exchangeRateToLkr.value)) {
-            elements.exchangeRateToLkr.value = '1.000';
-          }
-          await refreshPhpPreview(false);
-          return;
+      async function buildFxSnapshot(expenseDate, currencyCode, exchangeRateToLkr) {
+        const nowIso = new Date().toISOString();
+        const normalizedCurrency = getNormalizedCurrency(currencyCode);
+        const rateToLkr = toPositiveNumber(exchangeRateToLkr) || 1;
+        const snapshot = {
+          fx_lkr_to_php: null,
+          fx_lkr_to_cny: null,
+          fx_lkr_to_usd: null,
+          fx_locked_at: nowIso,
+        };
+
+        try {
+          const payload = await fetchRates('LKR');
+          snapshot.fx_lkr_to_php = toPositiveNumber(payload.rates.PHP) || null;
+          snapshot.fx_lkr_to_cny = toPositiveNumber(payload.rates.CNY) || null;
+          snapshot.fx_lkr_to_usd = toPositiveNumber(payload.rates.USD) || null;
+        } catch (error) {
+          console.error('上传日显示汇率锁定失败，使用当前缓存兜底:', error);
+          snapshot.fx_lkr_to_php = toPositiveNumber(state.lkrDisplayRates.PHP) || null;
+          snapshot.fx_lkr_to_cny = toPositiveNumber(state.lkrDisplayRates.CNY) || null;
+          snapshot.fx_lkr_to_usd = toPositiveNumber(state.lkrDisplayRates.USD) || null;
         }
 
-        if (!force && toPositiveNumber(elements.exchangeRateToLkr.value)) {
-          elements.exchangeRateToLkr.value = String(roundToThree(elements.exchangeRateToLkr.value).toFixed(3));
-          await refreshPhpPreview(false);
-          return;
+        if (normalizedCurrency === 'PHP' && !snapshot.fx_lkr_to_php) {
+          snapshot.fx_lkr_to_php = 1 / rateToLkr;
+        }
+        if (normalizedCurrency === 'CNY' && !snapshot.fx_lkr_to_cny) {
+          snapshot.fx_lkr_to_cny = 1 / rateToLkr;
+        }
+        if (normalizedCurrency === 'USD' && !snapshot.fx_lkr_to_usd) {
+          snapshot.fx_lkr_to_usd = 1 / rateToLkr;
+        }
+
+        return snapshot;
+      }
+
+      async function fillRateToLkr(forceRefresh = false) {
+        const currencyCode = getNormalizedCurrency(elements.currencyCode.value);
+        elements.currencyCode.value = currencyCode;
+        if (currencyCode === 'LKR') {
+          elements.exchangeRateToLkr.value = '1.000';
+          updateAmountPreview();
+          return 1;
         }
 
         try {
           const payload = await fetchRates(currencyCode);
-          const rate = Number(payload.rates.LKR || 0);
-          if (!Number.isFinite(rate) || rate <= 0) {
-            throw new Error('汇率接口未返回有效 LKR 汇率');
+          const rate = payload.rates && payload.rates.LKR ? Number(payload.rates.LKR) : 0;
+          if (rate > 0) {
+            elements.exchangeRateToLkr.value = String(roundToThree(rate).toFixed(3));
+            updateAmountPreview();
+            return rate;
           }
-          elements.exchangeRateToLkr.value = String(roundToThree(rate).toFixed(3));
-          await refreshPhpPreview(false);
         } catch (error) {
-          console.error(error);
-          setStatus('汇率自动填写失败，可手动填写');
-          await refreshPhpPreview(false);
+          console.error('自动获取 LKR 汇率失败:', error);
         }
+
+        if (forceRefresh) {
+          setStatus('汇率自动获取失败，请手动填写到 LKR 的汇率');
+        }
+        updateAmountPreview();
+        return toPositiveNumber(elements.exchangeRateToLkr.value);
       }
 
-      async function buildFrozenFxPayload(currencyCode, exchangeRate) {
-        const payload = {
-          fx_lkr_to_php: null,
-          fx_lkr_to_cny: null,
-          fx_lkr_to_usd: null,
-          fx_locked_at: new Date().toISOString(),
-        };
+      function updateAmountPreview() {
+        const amount = toPositiveNumber(elements.amountOriginal.value);
+        const currencyCode = getNormalizedCurrency(elements.currencyCode.value);
+        const rate = currencyCode === 'LKR' ? 1 : toPositiveNumber(elements.exchangeRateToLkr.value);
+        const lkrAmount = calculateLkrAmount(amount, rate || 0);
+        const label = currencyCode === 'LKR' ? 'LKR' : currencyCode + ' × ' + (rate ? roundToThree(rate).toFixed(3) : '--');
+        elements.lkrPreview.textContent = 'LKR 预览：' + formatAmount(lkrAmount) + '（' + label + '）';
+      }
+
+      async function refreshPhpPreview(forceRefresh) {
         try {
-          const rates = await ensureLkrDisplayRates(true);
-          payload.fx_lkr_to_php = rates.PHP ? roundToEight(rates.PHP) : null;
-          payload.fx_lkr_to_cny = rates.CNY ? roundToEight(rates.CNY) : null;
-          payload.fx_lkr_to_usd = rates.USD ? roundToEight(rates.USD) : null;
+          await ensureLkrDisplayRates(Boolean(forceRefresh));
+          renderTable(state.records);
         } catch (error) {
-          console.warn('获取冻结汇率失败，使用可推导汇率补全:', error);
+          console.error('PHP 汇率刷新失败:', error);
         }
-
-        const paymentCurrency = getNormalizedCurrency(currencyCode || 'LKR');
-        const rateToLkr = toPositiveNumber(exchangeRate);
-        if (paymentCurrency !== 'LKR' && rateToLkr > 0) {
-          const inverseRate = roundToEight(1 / rateToLkr);
-          if (paymentCurrency === 'PHP' && !payload.fx_lkr_to_php) payload.fx_lkr_to_php = inverseRate;
-          if (paymentCurrency === 'CNY' && !payload.fx_lkr_to_cny) payload.fx_lkr_to_cny = inverseRate;
-          if (paymentCurrency === 'USD' && !payload.fx_lkr_to_usd) payload.fx_lkr_to_usd = inverseRate;
-        }
-        return payload;
       }
 
-      function updateReimburserOptions(records) {
-        const names = Array.from(
-          new Set(
-            records
-              .map(function (record) {
-                return String(record.reimburser || '').trim();
-              })
-              .filter(Boolean),
-          ),
-        );
-        elements.reimburserOptions.innerHTML = names
-          .map(function (name) {
-            return '<option value="' + escapeHtml(name) + '"></option>';
-          })
-          .join('');
+      function getImageSignature(record) {
+        return getRecordImagePaths(record).join('|') || getRecordImageUrls(record).join('|');
+      }
+
+      function populateFormFromRecord(record) {
+        elements.expenseDate.value = record.expense_date || getLocalDateString();
+        elements.expenseType.value = record.expense_type || '';
+        elements.projectName.value = record.project_name || '';
+        elements.reimburserInput.value = record.reimburser || '';
+        const currencyCode = getNormalizedCurrency(record.currency_code || 'LKR');
+        elements.currencyCode.value = currencyCode;
+        const amountOriginal = Number(record.amount_original ?? record.amount_lkr ?? 0);
+        elements.amountOriginal.value = amountOriginal > 0 ? String(roundToTwo(amountOriginal)) : '';
+        const exchangeRate = toPositiveNumber(record.exchange_rate_to_lkr) || (currencyCode === 'LKR' ? 1 : 0);
+        elements.exchangeRateToLkr.value = exchangeRate ? String(roundToThree(exchangeRate).toFixed(3)) : '';
+        updateAmountPreview();
       }
 
       async function autoFillFormFromRecent() {
-        if (state.editingRecordId || !state.records.length) return;
-        const latestRecord = state.records.reduce(function (latest, item) {
-          if (!latest) return item;
-          return Number(item.id || 0) > Number(latest.id || 0) ? item : latest;
-        }, null);
-        if (!latestRecord) return;
+        if (!state.entryAuthorized || state.editingRecordId) return;
+        if (elements.expenseType.value || elements.projectName.value || elements.reimburserInput.value) return;
+        const today = getLocalDateString();
+        elements.expenseDate.value = elements.expenseDate.value || today;
+        if (!state.records.length) return;
 
-        if (!String(elements.reimburserInput.value || '').trim()) {
-          elements.reimburserInput.value = String(latestRecord.reimburser || '').trim();
-        }
-        if (!String(elements.expenseType.value || '').trim()) {
-          elements.expenseType.value = String(latestRecord.expense_type || '').trim();
-        }
-        if (!String(elements.projectName.value || '').trim()) {
-          elements.projectName.value = String(latestRecord.project_name || '').trim();
-        }
-        if (!String(elements.currencyCode.value || '').trim()) {
-          elements.currencyCode.value = getNormalizedCurrency(latestRecord.currency_code || 'LKR');
-        }
-        if (!toPositiveNumber(elements.exchangeRateToLkr.value)) {
+        const latestRecord = state.records[0];
+        if (!latestRecord) return;
+        elements.reimburserInput.value = latestRecord.reimburser || '';
+        elements.expenseType.value = latestRecord.expense_type || '';
+        elements.projectName.value = latestRecord.project_name || '';
+        const currencyCode = getNormalizedCurrency(latestRecord.currency_code || 'LKR');
+        elements.currencyCode.value = currencyCode;
+        if (currencyCode !== 'LKR') {
           const latestRate = toPositiveNumber(latestRecord.exchange_rate_to_lkr);
           if (latestRate) {
             elements.exchangeRateToLkr.value = String(roundToThree(latestRate).toFixed(3));
@@ -2403,7 +2214,13 @@
         return normalizeImageArray(record && record.image_url);
       }
 
-            async function getSignedImageUrl(path) {
+      function getPublicImageUrl(path) {
+        if (!supabaseClient) return '';
+        const publicResult = supabaseClient.storage.from(APP_CONFIG.STORAGE_BUCKET).getPublicUrl(path);
+        return publicResult.data && publicResult.data.publicUrl ? publicResult.data.publicUrl : '';
+      }
+
+      async function getSignedImageUrl(path) {
         const cleanValue = String(path || '').trim();
         if (!cleanValue) return '';
 
@@ -2434,6 +2251,14 @@
           return cached.url;
         }
 
+        if (!state.entryAuthorized) {
+          const publicUrl = getPublicImageUrl(cleanPath);
+          if (publicUrl) {
+            state.signedUrlCache.set(cleanPath, { url: publicUrl, expiresAt: Date.now() + SIGNED_URL_CACHE_TTL });
+          }
+          return publicUrl;
+        }
+
         try {
           const result = await supabaseClient.storage
             .from(APP_CONFIG.STORAGE_BUCKET)
@@ -2453,8 +2278,7 @@
             state.signedUrlCache.set(cleanPath, { url: '', expiresAt: Date.now() + SIGNED_URL_CACHE_TTL });
             return '';
           }
-          const publicResult = supabaseClient.storage.from(APP_CONFIG.STORAGE_BUCKET).getPublicUrl(cleanPath);
-          const publicUrl = publicResult.data && publicResult.data.publicUrl ? publicResult.data.publicUrl : '';
+          const publicUrl = getPublicImageUrl(cleanPath);
           if (publicUrl) {
             state.signedUrlCache.set(cleanPath, { url: publicUrl, expiresAt: Date.now() + SIGNED_URL_CACHE_TTL });
             return publicUrl;
@@ -2521,32 +2345,20 @@
             '<div class="preview-grid">' +
             urls
               .map(function (url, index) {
-                return (
-                  '<img src="' +
-                  escapeHtml(url) +
-                  '" alt="待上传报销图片预览 ' +
-                  String(index + 1) +
-                  '" />'
-                );
+                return '<img src="' + escapeHtml(url) + '" alt="待上传报销图片 ' + String(index + 1) + '" />';
               })
               .join('') +
             '</div>';
           return;
         }
 
-        const remoteUrls = normalizeImageArray(existingUrls);
-        if (remoteUrls.length) {
+        const existing = normalizeImageArray(existingUrls);
+        if (existing.length) {
           elements.imagePreview.innerHTML =
             '<div class="preview-grid">' +
-            remoteUrls
+            existing
               .map(function (url, index) {
-                return (
-                  '<img src="' +
-                  escapeHtml(url) +
-                  '" alt="当前报销图片预览 ' +
-                  String(index + 1) +
-                  '" />'
-                );
+                return '<img src="' + escapeHtml(url) + '" alt="已保存报销图片 ' + String(index + 1) + '" />';
               })
               .join('') +
             '</div>';
@@ -2558,13 +2370,17 @@
 
       function canvasToBlob(canvas, type, quality) {
         return new Promise(function (resolve, reject) {
-          canvas.toBlob(function (blob) {
-            if (!blob) {
-              reject(new Error('图片压缩失败'));
-              return;
-            }
-            resolve(blob);
-          }, type, quality);
+          canvas.toBlob(
+            function (blob) {
+              if (blob) {
+                resolve(blob);
+              } else {
+                reject(new Error('图片压缩失败'));
+              }
+            },
+            type,
+            quality,
+          );
         });
       }
 
@@ -2578,118 +2394,58 @@
           };
           image.onerror = function () {
             URL.revokeObjectURL(objectUrl);
-            reject(new Error('读取图片失败'));
+            reject(new Error('图片读取失败'));
           };
           image.src = objectUrl;
         });
       }
 
-      async function compressImageToLimit(file, maxBytes) {
+      async function compressReceiptImage(file) {
+        if (!file || file.size <= MAX_UPLOAD_IMAGE_BYTES) return file;
+
         const image = await loadImageElement(file);
+        const maxSide = 1800;
+        let width = image.naturalWidth || image.width;
+        let height = image.naturalHeight || image.height;
+        if (width > maxSide || height > maxSide) {
+          const ratio = Math.min(maxSide / width, maxSide / height);
+          width = Math.max(1, Math.round(width * ratio));
+          height = Math.max(1, Math.round(height * ratio));
+        }
+
         const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d', { alpha: false });
-        if (!context) {
-          throw new Error('浏览器不支持图片压缩');
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext('2d');
+        context.drawImage(image, 0, 0, width, height);
+
+        let quality = 0.82;
+        let blob = await canvasToBlob(canvas, 'image/jpeg', quality);
+        while (blob.size > MAX_UPLOAD_IMAGE_BYTES && quality > 0.42) {
+          quality -= 0.08;
+          blob = await canvasToBlob(canvas, 'image/jpeg', quality);
         }
 
-        const sourceWidth = image.naturalWidth || image.width;
-        const sourceHeight = image.naturalHeight || image.height;
-        let scale = 1;
-        let quality = 0.9;
-        let bestBlob = null;
-
-        for (let step = 0; step < 24; step += 1) {
-          const width = Math.max(160, Math.round(sourceWidth * scale));
-          const height = Math.max(160, Math.round(sourceHeight * scale));
-          canvas.width = width;
-          canvas.height = height;
-          context.fillStyle = '#ffffff';
-          context.fillRect(0, 0, width, height);
-          context.drawImage(image, 0, 0, width, height);
-
-          const blob = await canvasToBlob(canvas, 'image/jpeg', quality);
-          if (!bestBlob || blob.size < bestBlob.size) {
-            bestBlob = blob;
-          }
-          if (blob.size <= maxBytes) {
-            bestBlob = blob;
-            break;
-          }
-
-          if (quality > 0.42) {
-            quality -= 0.1;
-          } else {
-            scale *= 0.82;
-          }
-
-          if (scale < 0.15 && quality <= 0.42) {
-            break;
-          }
-        }
-
-        if (!bestBlob || bestBlob.size > maxBytes) {
-          throw new Error('图片压缩后仍超过 1MB，请选择更小的图片');
-        }
-
-        const fileBase = (file.name.replace(/\.[^/.]+$/, '') || 'image').slice(0, 80);
-        return new File([bestBlob], fileBase + '.jpg', {
+        return new File([blob], file.name.replace(/\.[^/.]+$/, '') + '.jpg', {
           type: 'image/jpeg',
           lastModified: Date.now(),
         });
       }
 
-      async function prepareUploadFile(file) {
-        if (!file) {
-          return { file: null, compressed: false };
-        }
+      function buildStoredFileFromBlob(blob, originalName) {
+        const fileBase = (originalName.replace(/\.[^/.]+$/, '') || 'image').slice(0, 80);
+        return new File([blob], fileBase + '.jpg', {
+          type: 'image/jpeg',
+          lastModified: Date.now(),
+        });
+      }
 
+      async function prepareReceiptFile(file) {
+        if (!file) return null;
         if (!file.type.startsWith('image/')) {
-          return { file: file, compressed: false };
+          throw new Error('只能上传图片文件');
         }
-
-        if (file.size <= MAX_UPLOAD_IMAGE_BYTES) {
-          return { file: file, compressed: false };
-        }
-
-        const compressedFile = await compressImageToLimit(file, MAX_UPLOAD_IMAGE_BYTES);
-        return { file: compressedFile, compressed: true };
-      }
-
-      function resetFormToCreateMode() {
-        state.editingRecordId = null;
-        elements.form.reset();
-        elements.expenseDate.value = getLocalDateString();
-        elements.currencyCode.value = 'LKR';
-        elements.exchangeRateToLkr.value = '1.000';
-        elements.amountOriginal.value = '';
-        updateAmountPreview();
-        renderPreview();
-        refreshFormMode();
-      }
-
-      function startEditMode(record) {
-        state.editingRecordId = record.id;
-        elements.expenseDate.value = record.expense_date || getLocalDateString();
-        elements.reimburserInput.value = String(record.reimburser || '').trim();
-        elements.expenseType.value = record.expense_type || '';
-        elements.projectName.value = record.project_name || '';
-        const currencyCode = getNormalizedCurrency(record.currency_code || 'LKR');
-        elements.currencyCode.value = currencyCode;
-        const amountOriginal = Number(record.amount_original ?? record.amount_lkr ?? 0);
-        elements.amountOriginal.value = amountOriginal > 0 ? String(roundToTwo(amountOriginal)) : '';
-        const exchangeRate = toPositiveNumber(record.exchange_rate_to_lkr) || (currencyCode === 'LKR' ? 1 : 0);
-        elements.exchangeRateToLkr.value = exchangeRate ? String(roundToThree(exchangeRate).toFixed(3)) : '';
-        updateAmountPreview();
-        if (currencyCode !== 'LKR' && !exchangeRate) {
-          fillRateToLkr(true).catch(function (error) {
-            console.error('编辑态汇率自动填写失败:', error);
-          });
-        }
-        elements.receiptImage.value = '';
-        renderPreview([], getRecordImageUrls(record));
-        refreshFormMode();
-        toggleEntryDrawer(true);
-        setStatus('已进入编辑模式，保存后将更新该记录');
+        return compressReceiptImage(file);
       }
 
       function renderTable(records, emptyMessage = '当前筛选条件下没有数据。') {
@@ -3013,58 +2769,42 @@
         });
 
         if (uploadResult.error) {
-          throw new Error('图片上传失败：' + uploadResult.error.message);
+          throw new Error(uploadResult.error.message);
         }
-
-        return {
-          path: filePath,
-          url: null,
-        };
+        return { path: filePath, url: null };
       }
 
-      function hasMissingMultiImageColumns(message) {
+      async function verifyStoredImages(imagePaths) {
+        const paths = normalizeImageArray(imagePaths);
+        if (!paths.length) return [];
+        const missing = [];
+        await Promise.all(
+          paths.map(async function (path) {
+            const url = await getSignedImageUrl(path);
+            if (!url) {
+              missing.push(path);
+            }
+          }),
+        );
+        return missing;
+      }
+
+      function isMissingImageColumnsError(message) {
         const text = String(message || '').toLowerCase();
         return text.includes('column') && (text.includes('image_urls') || text.includes('image_paths'));
       }
 
-      function hasMissingCurrencyColumns(message) {
-        const text = String(message || '').toLowerCase();
-        return (
-          text.includes('column') &&
-          (text.includes('currency_code') ||
-            text.includes('amount_original') ||
-            text.includes('exchange_rate_to_lkr') ||
-            text.includes('fx_lkr_to_php') ||
-            text.includes('fx_lkr_to_cny') ||
-            text.includes('fx_lkr_to_usd') ||
-            text.includes('fx_locked_at'))
-        );
-      }
-
-      function buildFallbackPayload(payload, message) {
-        const nextPayload = Object.assign({}, payload);
-        const removed = {
-          multiImage: false,
-          currencyMeta: false,
-        };
-
-        if (hasMissingMultiImageColumns(message)) {
+      function buildPayloadWithoutImageArrays(payload) {
+        const nextPayload = { ...payload };
+        const removed = [];
+        if ('image_paths' in nextPayload) {
           delete nextPayload.image_paths;
+          removed.push('image_paths');
+        }
+        if ('image_urls' in nextPayload) {
           delete nextPayload.image_urls;
-          removed.multiImage = true;
+          removed.push('image_urls');
         }
-
-        if (hasMissingCurrencyColumns(message)) {
-          delete nextPayload.currency_code;
-          delete nextPayload.amount_original;
-          delete nextPayload.exchange_rate_to_lkr;
-          delete nextPayload.fx_lkr_to_php;
-          delete nextPayload.fx_lkr_to_cny;
-          delete nextPayload.fx_lkr_to_usd;
-          delete nextPayload.fx_locked_at;
-          removed.currencyMeta = true;
-        }
-
         return { payload: nextPayload, removed: removed };
       }
 
@@ -3073,214 +2813,191 @@
         if (!paths.length) return;
         const result = await supabaseClient.storage.from(APP_CONFIG.STORAGE_BUCKET).remove(paths);
         if (result.error) {
-          console.warn('旧图片删除失败:', result.error.message);
+          console.warn('删除旧图片失败:', result.error.message);
         }
       }
 
       async function createRecord(event) {
         event.preventDefault();
-
         if (!state.entryAuthorized) {
           openAuthModal();
-          setStatus('请先登录，再执行录入与修改');
+          setStatus('请先登录后再新增或编辑报销');
           return;
         }
-
         if (!supabaseClient) {
           setStatus('Supabase 未配置，无法保存。');
           return;
         }
 
-        const formData = new FormData(elements.form);
         const selectedFiles = Array.from(elements.receiptImage.files || []);
-        const isEditing = Boolean(state.editingRecordId);
-        const currentRecord = isEditing
-          ? state.records.find(function (item) {
-              return String(item.id) === String(state.editingRecordId);
+        if (!state.editingRecordId && !selectedFiles.length) {
+          setStatus('请上传至少一张报销图片');
+          return;
+        }
+
+        const currentRecord = state.editingRecordId
+          ? state.records.find(function (record) {
+              return String(record.id) === String(state.editingRecordId);
             })
           : null;
-        let compressedCount = 0;
-        let fallbackToSingleImage = false;
-        let fallbackCurrencyMeta = false;
-        let dbWriteSucceeded = false;
-        const uploadedImages = [];
+        if (state.editingRecordId && !currentRecord) {
+          setStatus('未找到正在编辑的记录，请刷新后重试');
+          return;
+        }
+
+        const currencyCode = getNormalizedCurrency(elements.currencyCode.value);
+        const amountOriginal = toPositiveNumber(elements.amountOriginal.value);
+        const exchangeRateToLkr = currencyCode === 'LKR' ? 1 : toPositiveNumber(elements.exchangeRateToLkr.value);
+        if (!amountOriginal) {
+          setStatus('请填写有效的原币金额');
+          elements.amountOriginal.focus();
+          return;
+        }
+        if (!exchangeRateToLkr) {
+          setStatus('请填写有效的 LKR 汇率');
+          elements.exchangeRateToLkr.focus();
+          return;
+        }
+        const amountLkr = calculateLkrAmount(amountOriginal, exchangeRateToLkr);
+        const fxSnapshot = await buildFxSnapshot(elements.expenseDate.value, currencyCode, exchangeRateToLkr);
 
         setSubmitState(true);
-        setStatus(isEditing ? '正在更新记录...' : '正在保存记录...');
+        setStatus(state.editingRecordId ? '正在更新记录...' : '正在上传图片并保存...');
+
+        const uploadedImages = [];
+        let oldImagePaths = [];
+        let payloadForCleanup = null;
+        let usedFallbackPayload = false;
 
         try {
-          const uploadFiles = [];
           for (const file of selectedFiles) {
-            const prepared = await prepareUploadFile(file);
-            if (prepared.compressed) {
-              compressedCount += 1;
-            }
-            if (prepared.file) {
-              uploadFiles.push(prepared.file);
+            const preparedFile = await prepareReceiptFile(file);
+            const uploaded = await uploadReceipt(preparedFile);
+            if (uploaded.path) {
+              uploadedImages.push(uploaded);
             }
           }
 
-          for (const file of uploadFiles) {
-            uploadedImages.push(await uploadReceipt(file));
-          }
-
-          const nextImagePaths = uploadedImages
+          const uploadedPaths = uploadedImages
             .map(function (item) {
               return item.path;
             })
             .filter(Boolean);
+          const existingPaths = currentRecord ? getRecordImagePaths(currentRecord) : [];
+          const nextImagePaths = uploadedPaths.length ? uploadedPaths : existingPaths;
+          const nextImageUrls = [];
 
-          const reimburser = String(formData.get('reimburser') || '').trim();
-          const currencyCode = getNormalizedCurrency(formData.get('currency_code') || 'LKR');
-          const amountOriginal = toPositiveNumber(formData.get('amount_original'));
-          let exchangeRate = toPositiveNumber(formData.get('exchange_rate_to_lkr'));
-          if (currencyCode === 'LKR' && !exchangeRate) {
-            exchangeRate = 1;
-          }
-
-          if (!amountOriginal) {
-            throw new Error('请输入有效金额');
-          }
-          if (!exchangeRate) {
-            throw new Error('请输入有效汇率');
-          }
-
-          const amountLkr = roundToTwo(computeAmountLkr(amountOriginal, exchangeRate, currencyCode));
-          if (!amountLkr) {
-            throw new Error('折算 LKR 金额无效，请检查金额和汇率');
-          }
-
-          let frozenFxPayload = null;
-          if (isEditing && currentRecord) {
-            const hasLockedFx =
-              toPositiveNumber(currentRecord.fx_lkr_to_php) ||
-              toPositiveNumber(currentRecord.fx_lkr_to_cny) ||
-              toPositiveNumber(currentRecord.fx_lkr_to_usd) ||
-              String(currentRecord.fx_locked_at || '').trim();
-            if (hasLockedFx) {
-              frozenFxPayload = {
-                fx_lkr_to_php: toPositiveNumber(currentRecord.fx_lkr_to_php) || null,
-                fx_lkr_to_cny: toPositiveNumber(currentRecord.fx_lkr_to_cny) || null,
-                fx_lkr_to_usd: toPositiveNumber(currentRecord.fx_lkr_to_usd) || null,
-                fx_locked_at: currentRecord.fx_locked_at || currentRecord.created_at || new Date().toISOString(),
-              };
-            } else {
-              frozenFxPayload = await buildFrozenFxPayload(currencyCode, exchangeRate);
+          if (nextImagePaths.length) {
+            const missingImages = await verifyStoredImages(nextImagePaths);
+            if (missingImages.length) {
+              throw new Error('图片上传校验失败：Supabase Storage 中找不到 ' + missingImages.length + ' 个文件，请重新上传。');
             }
-          } else {
-            frozenFxPayload = await buildFrozenFxPayload(currencyCode, exchangeRate);
           }
 
-          const basePayload = Object.assign(
-            {
-              reimburser: reimburser || null,
-              expense_date: formData.get('expense_date'),
-              expense_type: String(formData.get('expense_type') || '').trim(),
-              project_name: String(formData.get('project_name') || '').trim(),
-              owner_id: state.authUser ? state.authUser.id : null,
-              amount_lkr: amountLkr,
-              currency_code: currencyCode,
-              amount_original: roundToTwo(amountOriginal),
-              exchange_rate_to_lkr: roundToThree(exchangeRate),
-            },
-            frozenFxPayload || {},
-          );
+          const basePayload = {
+            expense_date: elements.expenseDate.value,
+            expense_type: elements.expenseType.value.trim(),
+            project_name: elements.projectName.value.trim(),
+            currency_code: currencyCode,
+            amount_original: amountOriginal,
+            exchange_rate_to_lkr: exchangeRateToLkr,
+            amount_lkr: amountLkr,
+            reimburser: elements.reimburserInput.value.trim() || null,
+            owner_id: state.authUser ? state.authUser.id : null,
+            ...fxSnapshot,
+          };
 
-          if (isEditing) {
-            const updatePayload = Object.assign({}, basePayload);
-            if (nextImagePaths.length) {
+          if (state.editingRecordId) {
+            const updatePayload = { ...basePayload };
+            if (uploadedPaths.length) {
               updatePayload.image_path = nextImagePaths[0];
               updatePayload.image_url = null;
               updatePayload.image_paths = nextImagePaths;
               updatePayload.image_urls = [];
+              oldImagePaths = existingPaths;
             }
 
-            let updateResult = await supabaseClient
+            let result = await supabaseClient
               .from('reimbursements')
               .update(updatePayload)
-              .select('id')
+              .select()
               .eq('id', state.editingRecordId);
 
-            if (updateResult.error) {
-              const fallbackUpdate = buildFallbackPayload(updatePayload, updateResult.error.message);
-              if (fallbackUpdate.removed.multiImage || fallbackUpdate.removed.currencyMeta) {
-                fallbackToSingleImage = fallbackToSingleImage || fallbackUpdate.removed.multiImage;
-                fallbackCurrencyMeta = fallbackCurrencyMeta || fallbackUpdate.removed.currencyMeta;
-                updateResult = await supabaseClient
-                  .from('reimbursements')
-                  .update(fallbackUpdate.payload)
-                  .select('id')
-                  .eq('id', state.editingRecordId);
-                if (!updateResult.error && fallbackUpdate.removed.multiImage && nextImagePaths.length > 1) {
+            if (result.error && isMissingImageColumnsError(result.error.message)) {
+              const fallback = buildPayloadWithoutImageArrays(updatePayload);
+              payloadForCleanup = fallback.payload;
+              usedFallbackPayload = true;
+              if (uploadedPaths.length && nextImagePaths.length > 1) {
                   // Keep extra uploaded images in Storage even if an old schema fallback saves only the first path.
-                }
               }
+              result = await supabaseClient
+                .from('reimbursements')
+                .update(fallback.payload)
+                .select()
+                .eq('id', state.editingRecordId);
             }
 
-            if (updateResult.error) {
-              throw new Error(updateResult.error.message);
+            if (result.error) {
+              throw new Error(result.error.message);
             }
-            if (!Array.isArray(updateResult.data) || updateResult.data.length === 0) {
-              throw new Error('更新未生效：请在 Supabase 开启 UPDATE 策略（RLS）');
+            if (!Array.isArray(result.data) || result.data.length === 0) {
+              throw new Error('更新未生效：请确认当前账号有权限修改这条记录。');
             }
-
-            if (nextImagePaths.length && currentRecord) {
+            if (uploadedPaths.length && oldImagePaths.length) {
               // Keep previous receipt files in Storage when replacing images.
-
               // This prevents historical database paths from turning into broken links.
             }
+            setStatus('已更新记录：No.' + result.data[0].id + (usedFallbackPayload ? '（已兼容旧表结构）' : ''));
           } else {
-            const createPayload = Object.assign({}, basePayload, {
-              status: '待报销',
+            const createPayload = {
+              ...basePayload,
               image_path: nextImagePaths[0] || null,
               image_url: null,
-            });
-
+            };
             if (nextImagePaths.length) {
               createPayload.image_paths = nextImagePaths;
               createPayload.image_urls = [];
             }
 
-            let insertResult = await supabaseClient.from('reimbursements').insert(createPayload);
-            if (insertResult.error) {
-              const fallbackInsert = buildFallbackPayload(createPayload, insertResult.error.message);
-              if (fallbackInsert.removed.multiImage || fallbackInsert.removed.currencyMeta) {
-                fallbackToSingleImage = fallbackToSingleImage || fallbackInsert.removed.multiImage;
-                fallbackCurrencyMeta = fallbackCurrencyMeta || fallbackInsert.removed.currencyMeta;
-                insertResult = await supabaseClient.from('reimbursements').insert(fallbackInsert.payload);
-                if (!insertResult.error && fallbackInsert.removed.multiImage && nextImagePaths.length > 1) {
+            let result = await supabaseClient.from('reimbursements').insert(createPayload).select();
+            if (result.error && isMissingImageColumnsError(result.error.message)) {
+              const fallback = buildPayloadWithoutImageArrays(createPayload);
+              payloadForCleanup = fallback.payload;
+              usedFallbackPayload = true;
+              if (nextImagePaths.length > 1) {
                   // Keep extra uploaded images in Storage even if an old schema fallback saves only the first path.
-                }
               }
+              result = await supabaseClient.from('reimbursements').insert(fallback.payload).select();
             }
-
-            if (insertResult.error) {
-              throw new Error(insertResult.error.message);
+            if (result.error) {
+              throw new Error(result.error.message);
             }
+            if (!Array.isArray(result.data) || result.data.length === 0) {
+              throw new Error('保存未生效：请确认当前账号有权限新增记录。');
+            }
+            setStatus('已保存：No.' + result.data[0].id + (usedFallbackPayload ? '（已兼容旧表结构）' : ''));
           }
 
-          dbWriteSucceeded = true;
+          state.pageIndex = 0;
           resetFormToCreateMode();
-          toggleEntryDrawer(false);
-          await loadRecords({ preservePage: true });
-          const notices = [];
-          if (compressedCount > 0) {
-            notices.push(String(compressedCount) + ' 张图片已自动压缩至 1MB 以下');
-          }
-          if (fallbackToSingleImage) {
-            notices.push('数据库缺少多图字段，已回退为仅保存首张图片');
-          }
-          if (fallbackCurrencyMeta) {
-            notices.push('数据库缺少币种或汇率快照字段，已降级保存基础金额信息');
-          }
-          setStatus((isEditing ? '记录已更新' : '记录已保存') + (notices.length ? '（' + notices.join('；') + '）' : ''));
+          await loadRecords({ resetPage: true });
+          await refreshPhpPreview(false);
         } catch (error) {
           console.error(error);
-          setStatus(error instanceof Error ? error.message : '保存失败');
-        } finally {
-          if (!dbWriteSucceeded && uploadedImages.length) {
+          const uploadedPaths = uploadedImages
+            .map(function (item) {
+              return item.path;
+            })
+            .filter(Boolean);
+          if (uploadedPaths.length) {
             // Keep uploaded receipt files in Storage for recovery; clean orphaned files manually if needed.
           }
+          const message = error instanceof Error ? error.message : '未知错误';
+          setStatus('保存失败：' + message);
+          if (payloadForCleanup) {
+            console.warn('回退 payload:', payloadForCleanup);
+          }
+        } finally {
           setSubmitState(false);
         }
       }
@@ -3288,7 +3005,11 @@
       async function deleteRecord(recordId) {
         if (!state.entryAuthorized) {
           openAuthModal();
-          setStatus('请先登录，再执行删除');
+          setStatus('请先登录后再删除报销记录');
+          return;
+        }
+        if (!supabaseClient) {
+          setStatus('Supabase 未配置，无法删除。');
           return;
         }
 
@@ -3300,46 +3021,34 @@
           return;
         }
 
-        const displayNo = state.records.findIndex(function (item) {
-          return String(item.id) === String(record.id);
-        });
-        const serialNo = displayNo >= 0 ? state.pageIndex * state.pageSize + displayNo + 1 : record.id;
-        const confirmed = window.confirm(
-          '确认删除 No.' + String(serialNo) + ' 吗？该操作不可恢复。',
-        );
+        const confirmed = window.confirm('确定删除 No.' + record.id + ' 这条报销记录吗？');
         if (!confirmed) return;
 
-        setStatus('正在删除记录...');
-        const result = await supabaseClient.from('reimbursements').delete().select('id').eq('id', record.id);
-        if (result.error) {
-          setStatus('删除失败：' + result.error.message);
-          return;
-        }
-        if (!Array.isArray(result.data) || result.data.length === 0) {
-          setStatus('删除未生效：请在 Supabase 开启 DELETE 策略（RLS）');
-          return;
-        }
-
+        try {
+          const result = await supabaseClient.from('reimbursements').delete().eq('id', record.id).select('id');
+          if (result.error) {
+            throw new Error(result.error.message);
+          }
+          if (!Array.isArray(result.data) || result.data.length === 0) {
+            throw new Error('删除未生效：请确认当前账号有权限删除这条记录。');
+          }
         // Receipt files are intentionally retained in Storage when rows are deleted.
-
-
         // If cleanup is needed later, do it as a separate audited admin action.
-
-        if (String(state.editingRecordId) === String(record.id)) {
-          resetFormToCreateMode();
+          setStatus('已删除记录：No.' + record.id);
+          await loadRecords({ preservePage: true });
+        } catch (error) {
+          console.error(error);
+          const message = error instanceof Error ? error.message : '未知错误';
+          setStatus('删除失败：' + message);
         }
-
-        await loadRecords({ preservePage: true });
-        setStatus('记录已删除');
       }
 
       async function updateRecordStatus(recordId, nextStatus) {
         if (!state.entryAuthorized) {
           openAuthModal();
-          setStatus('请先登录，再修改状态');
+          setStatus('请先登录后再修改报销状态');
           return false;
         }
-
         if (!supabaseClient) {
           setStatus('Supabase 未配置，无法更新状态。');
           return false;
@@ -3365,7 +3074,7 @@
               status: normalized,
               owner_id: state.authUser ? state.authUser.id : null,
             })
-            .select('id')
+            .select('id,status')
             .eq('id', record.id);
 
           if (result.error) {
@@ -3376,16 +3085,12 @@
           }
 
           record.status = normalized;
-          setStatus('状态已更新：No.' + record.id);
+          setStatus('状态已更新：No.' + record.id + ' → ' + normalized);
           return true;
         } catch (error) {
           console.error(error);
           const message = error instanceof Error ? error.message : '未知错误';
-          if (message.includes('column') && message.includes('status')) {
-            setStatus('状态更新失败：缺少 status 字段，请先在 Supabase 执行最新 schema.sql');
-          } else {
-            setStatus('状态更新失败：' + message);
-          }
+          setStatus('状态更新失败：' + message);
           return false;
         } finally {
           state.updatingStatusIds.delete(rowId);
