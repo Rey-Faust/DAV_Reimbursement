@@ -2403,7 +2403,13 @@
         return normalizeImageArray(record && record.image_url);
       }
 
-            async function getSignedImageUrl(path) {
+      function getPublicImageUrl(path) {
+        if (!supabaseClient) return '';
+        const publicResult = supabaseClient.storage.from(APP_CONFIG.STORAGE_BUCKET).getPublicUrl(path);
+        return publicResult.data && publicResult.data.publicUrl ? publicResult.data.publicUrl : '';
+      }
+
+      async function getSignedImageUrl(path) {
         const cleanValue = String(path || '').trim();
         if (!cleanValue) return '';
 
@@ -2434,6 +2440,14 @@
           return cached.url;
         }
 
+        if (!state.entryAuthorized) {
+          const publicUrl = getPublicImageUrl(cleanPath);
+          if (publicUrl) {
+            state.signedUrlCache.set(cleanPath, { url: publicUrl, expiresAt: Date.now() + SIGNED_URL_CACHE_TTL });
+          }
+          return publicUrl;
+        }
+
         try {
           const result = await supabaseClient.storage
             .from(APP_CONFIG.STORAGE_BUCKET)
@@ -2453,8 +2467,7 @@
             state.signedUrlCache.set(cleanPath, { url: '', expiresAt: Date.now() + SIGNED_URL_CACHE_TTL });
             return '';
           }
-          const publicResult = supabaseClient.storage.from(APP_CONFIG.STORAGE_BUCKET).getPublicUrl(cleanPath);
-          const publicUrl = publicResult.data && publicResult.data.publicUrl ? publicResult.data.publicUrl : '';
+          const publicUrl = getPublicImageUrl(cleanPath);
           if (publicUrl) {
             state.signedUrlCache.set(cleanPath, { url: publicUrl, expiresAt: Date.now() + SIGNED_URL_CACHE_TTL });
             return publicUrl;
