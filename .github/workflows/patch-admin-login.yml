@@ -11,4 +11,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Already patched
-        run: echo "Admin login settings are handled directly in index.html."
+        run: echo "Login settings and public visibility are handled directly in index.html."
