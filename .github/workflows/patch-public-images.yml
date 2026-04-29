@@ -25,6 +25,7 @@ jobs:
           let source = fs.readFileSync(file, 'utf8');
           const before = source;
 
+          // Read-only users should still be able to view receipt images.
           source = source.replace(
             "if (!cleanPath || !supabaseClient || !state.entryAuthorized) return '';",
             "if (!cleanPath || !supabaseClient) return '';"
