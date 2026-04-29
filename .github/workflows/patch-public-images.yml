@@ -1,65 +1,14 @@
 name: Patch app hardening
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  patch-index:
+  already-patched:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Remove visible login hints
-        run: |
-          node <<'NODE'
-          const fs = require('fs');
-          const file = 'index.html';
-          let source = fs.readFileSync(file, 'utf8');
-          const before = source;
-
-          source = source.replace('placeholder="Admin" autocomplete="username"', 'placeholder="请输入账号或邮箱" autocomplete="username"');
-          source = source.replace('elements.authEmail.value = AUTH_CONFIG.DEFAULT_ADMIN_USERNAME;', "elements.authEmail.value = '';");
-          source = source.replace("elements.authError.textContent = '仅支持账号 Admin。';", "elements.authError.textContent = '账号或密码不正确。';");
-
-          const visibleHintPatterns = [
-            /默认账号[：:]?\s*Admin/,
-            /placeholder="Admin"/,
-            /elements\.authEmail\.value\s*=\s*AUTH_CONFIG\.DEFAULT_ADMIN_USERNAME/,
-            /仅支持账号\s*Admin/,
-          ];
-          for (const pattern of visibleHintPatterns) {
-            if (pattern.test(source)) {
-              throw new Error('Visible login account hint still exists.');
-            }
-          }
-
-          if (source === before) {
-            console.log('No login hint cleanup diff.');
-            process.exit(0);
-          }
-
-          fs.writeFileSync(file, source);
-          NODE
-
-          python3 - <<'PY'
-          from pathlib import Path
-          text = Path('index.html').read_text()
-          start = text.index('<script>') + len('<script>')
-          end = text.rindex('</script>')
-          Path('/tmp/dav-index-script.js').write_text(text[start:end])
-          PY
-          node --check /tmp/dav-index-script.js
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          git commit -m "Remove visible default login hints"
-          git push
+      - name: Already patched directly
+        run: echo "Auth and public visibility hardening now live in index.html."
