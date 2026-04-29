@@ -2862,9 +2862,6 @@
 
       function applyRecordFilters(query) {
         let nextQuery = query;
-        if (!state.entryAuthorized) {
-          nextQuery = nextQuery.or('status.is.null,status.neq.已报销');
-        }
         if (elements.filterStartDate.value) {
           nextQuery = nextQuery.gte('expense_date', elements.filterStartDate.value);
         }
