@@ -1,32 +1,14 @@
 name: Patch admin login email
 
 on:
-  push:
-    paths:
-      - .github/workflows/patch-admin-login.yml
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  patch-index:
+  noop:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Patch admin auth settings
-        run: |
-          # Keep the public login label as Admin, but point it at the real Supabase Auth email.
-          perl -0pi -e "s/admin\@dav\.local/reyreyfaust\@gmail.com/g; s/DEFAULT_ADMIN_PASSWORD: 'X_Rey'/DEFAULT_ADMIN_PASSWORD: 'X_Rey1'/g" index.html
-          if git diff --quiet -- index.html; then
-            echo "Admin auth settings already patched; nothing to patch."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          git commit -m "Update Admin login password"
-          git push
+      - name: Already patched
+        run: echo "Admin login settings were patched in index.html."
